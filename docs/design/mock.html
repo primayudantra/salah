@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Salah — macOS mock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --desk: #D6D8D3;
+      --bg: #F3F4F1;
+      --chrome: #ECEDE9;
+      --display: #E4E7E6;
+      --red: #A10F24;
+      --accent: #C21D35;
+      --text: #171717;
+      --muted: #5E5E5C;
+      --hi: #F0F0EC;
+      --onred: #FBEEF0;
+      --onred-dim: rgba(251, 238, 240, .62);
+      --line: rgba(23, 23, 23, .12);
+      --dot: rgba(23, 23, 23, .045);
+      --shadow: 0 30px 60px -20px rgba(0, 0, 0, .35), 0 0 0 .5px rgba(0, 0, 0, .18);
+      --digits: "Doto", "Menlo", "Courier New", monospace;
+      --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    @media (prefers-color-scheme:dark) {
+      :root:not([data-theme="light"]) {
+        --desk: #070707;
+        --bg: #121212;
+        --chrome: #1A1B1B;
+        --display: #1E2020;
+        --red: #7E0C1C;
+        --accent: #E0364E;
+        --text: #EDEDEA;
+        --muted: #9A9A96;
+        --hi: #2A2C2C;
+        --line: rgba(255, 255, 255, .1);
+        --dot: rgba(255, 255, 255, .035);
+        --shadow: 0 30px 60px -20px rgba(0, 0, 0, .8), 0 0 0 .5px rgba(255, 255, 255, .12);
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --desk: #070707;
+      --bg: #121212;
+      --chrome: #1A1B1B;
+      --display: #1E2020;
+      --red: #7E0C1C;
+      --accent: #E0364E;
+      --text: #EDEDEA;
+      --muted: #9A9A96;
+      --hi: #2A2C2C;
+      --line: rgba(255, 255, 255, .1);
+      --dot: rgba(255, 255, 255, .035);
+      --shadow: 0 30px 60px -20px rgba(0, 0, 0, .8), 0 0 0 .5px rgba(255, 255, 255, .12);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: inherit
+    }
+
+    html {
+      scroll-padding-top: env(safe-area-inset-top, 0px)
+    }
+
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--desk);
+      color: var(--text);
+      font: 13px/1.4 var(--ui);
+      -webkit-font-smoothing: antialiased
+    }
+
+    button,
+    select,
+    input {
+      font: inherit;
+      color: inherit
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px
+    }
+
+    /* macOS menu bar */
+    .menubar {
+      position: sticky;
+      top: env(safe-area-inset-top, 0px);
+      z-index: 5;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 0 14px;
+      background: color-mix(in srgb, var(--bg) 78%, transparent);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      font-size: 13px
+    }
+
+    .menubar b {
+      font-weight: 600
+    }
+
+    .menubar .grow {
+      flex: 1
+    }
+
+    .mb-extra {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 1px 8px;
+      border-radius: 5px;
+      cursor: default;
+      font-variant-numeric: tabular-nums
+    }
+
+    .mb-extra:hover {
+      background: var(--line)
+    }
+
+    .mb-menus span {
+      margin-right: 16px;
+      color: var(--text)
+    }
+
+    .stage {
+      display: flex;
+      justify-content: center;
+      padding: 48px 20px 64px
+    }
+
+    .window {
+      width: 100%;
+      max-width: 940px;
+      background: var(--bg);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden
+    }
+
+    /* titlebar + toolbar */
+    .titlebar {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      height: 52px;
+      padding: 0 16px;
+      background: var(--chrome);
+      border-bottom: 1px solid var(--line)
+    }
+
+    .lights {
+      display: flex;
+      gap: 8px
+    }
+
+    .lights i {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: block;
+      box-shadow: inset 0 0 0 .5px rgba(0, 0, 0, .2)
+    }
+
+    .lights i:nth-child(1) {
+      background: #FF5F57
+    }
+
+    .lights i:nth-child(2) {
+      background: #FEBC2E
+    }
+
+    .lights i:nth-child(3) {
+      background: #28C840
+    }
+
+    .seg {
+      display: flex;
+      background: var(--line);
+      border-radius: 7px;
+      padding: 2px;
+      gap: 2px
+    }
+
+    .seg button {
+      border: 0;
+      background: transparent;
+      padding: 4px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12.5px;
+      color: var(--text)
+    }
+
+    .seg button[aria-selected="true"] {
+      background: var(--bg);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .15)
+    }
+
+    .tb-right {
+      justify-self: end;
+      color: var(--muted);
+      font-size: 12px
+    }
+
+    /* Today: split device face */
+    .face {
+      display: grid;
+      grid-template-columns: minmax(260px, 330px) 1fr;
+      min-height: 470px
+    }
+
+    .timeline {
+      background: var(--red);
+      color: var(--onred);
+      padding: 26px 26px 22px;
+      display: flex;
+      flex-direction: column
+    }
+
+    .datebtn {
+      all: unset;
+      cursor: pointer;
+      display: block;
+      border-radius: 6px
+    }
+
+    .date {
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: .01em
+    }
+
+    .hijri {
+      color: var(--onred-dim);
+      font-size: 12.5px;
+      margin-top: 2px
+    }
+
+    .rows {
+      list-style: none;
+      margin: 26px 0 0;
+      padding: 0;
+      position: relative;
+      flex: 1
+    }
+
+    .rows::before {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 14px;
+      bottom: 14px;
+      width: 1px;
+      background: var(--onred-dim);
+      opacity: .55
+    }
+
+    .row {
+      position: relative
+    }
+
+    .row button {
+      all: unset;
+      box-sizing: border-box;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: 22px 1fr auto;
+      align-items: center;
+      width: 100%;
+      padding: 9px 12px 9px 0;
+      border-radius: 8px;
+      transition: background .25s
+    }
+
+    .row button:hover {
+      background: rgba(255, 255, 255, .07)
+    }
+
+    .row button:focus-visible {
+      outline: 2px solid var(--onred);
+      outline-offset: 0
+    }
+
+    .mark {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--onred);
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 0 0 3px var(--red)
+    }
+
+    .row.sunrise .mark {
+      background: var(--red);
+      border: 1.5px solid var(--onred-dim);
+      width: 9px;
+      height: 9px;
+      margin-left: 1px
+    }
+
+    .row.sunrise .name,
+    .row.sunrise .t {
+      font-size: 12px;
+      color: var(--onred-dim)
+    }
+
+    .name {
+      font-size: 14px;
+      font-weight: 500
+    }
+
+    .t {
+      font-family: var(--digits);
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: .04em;
+      font-variant-numeric: tabular-nums
+    }
+
+    .row.past .name,
+    .row.past .t {
+      opacity: .55
+    }
+
+    .row.next button {
+      background: var(--hi);
+      color: var(--text);
+      padding-left: 10px;
+      margin-left: -10px;
+      width: calc(100% + 10px)
+    }
+
+    .row.next .mark {
+      background: var(--accent);
+      box-shadow: 0 0 0 3px var(--hi)
+    }
+
+    .row.current .name::after {
+      content: "now";
+      margin-left: 8px;
+      font-size: 10.5px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, .18);
+      vertical-align: 1px
+    }
+
+    .row .ampm {
+      font-family: var(--ui);
+      font-size: 10px;
+      font-weight: 600;
+      margin-left: 3px;
+      opacity: .7
+    }
+
+    .method {
+      margin-top: 14px;
+      font-size: 11.5px;
+      color: var(--onred-dim)
+    }
+
+    .display {
+      position: relative;
+      background: var(--display);
+      margin: 14px;
+      border-radius: 14px;
+      padding: 30px 34px;
+      display: flex;
+      flex-direction: column;
+      background-image: radial-gradient(var(--dot) 1px, transparent 1.2px);
+      background-size: 4px 4px;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, .08), inset 0 0 0 1px var(--line)
+    }
+
+    .status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .14em;
+      color: var(--muted)
+    }
+
+    .status .tag {
+      letter-spacing: .06em;
+      font-weight: 600;
+      color: var(--accent)
+    }
+
+    .pname {
+      font-family: var(--digits);
+      font-weight: 900;
+      font-size: clamp(44px, 7.4vw, 84px);
+      line-height: .95;
+      letter-spacing: .02em;
+      margin-top: 26px;
+      text-transform: uppercase
+    }
+
+    .ptime {
+      font-family: var(--digits);
+      font-weight: 900;
+      font-size: clamp(64px, 12vw, 138px);
+      line-height: .9;
+      letter-spacing: .01em;
+      margin-top: 6px;
+      font-variant-numeric: tabular-nums;
+      display: flex;
+      align-items: baseline;
+      gap: 10px
+    }
+
+    .ptime small {
+      font-family: var(--ui);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--muted)
+    }
+
+    .rule {
+      height: 2px;
+      background: var(--text);
+      width: 88px;
+      margin: 22px 0 16px;
+      border-radius: 1px
+    }
+
+    .countdown {
+      font-family: var(--digits);
+      font-weight: 700;
+      font-size: 28px;
+      letter-spacing: .06em;
+      font-variant-numeric: tabular-nums
+    }
+
+    .countdown span {
+      font-family: var(--ui);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .14em;
+      color: var(--muted);
+      margin-right: 10px;
+      vertical-align: 4px
+    }
+
+    .foot {
+      margin-top: auto;
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12.5px
+    }
+
+    .locbtn {
+      all: unset;
+      cursor: pointer;
+      border-radius: 4px;
+      color: var(--text);
+      font-weight: 500
+    }
+
+    .locbtn:hover {
+      text-decoration: underline
+    }
+
+    .clock {
+      font-family: var(--digits);
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text);
+      font-variant-numeric: tabular-nums
+    }
+
+    .backlink {
+      all: unset;
+      cursor: pointer;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: .02em
+    }
+
+    .display.is-now .pname {
+      color: var(--accent)
+    }
+
+    .display.detail .detail-meta {
+      display: grid
+    }
+
+    .detail-meta {
+      display: none;
+      grid-template-columns: auto 1fr;
+      gap: 6px 18px;
+      margin-top: 4px;
+      font-size: 13px
+    }
+
+    .detail-meta dt {
+      color: var(--muted)
+    }
+
+    .detail-meta dd {
+      margin: 0
+    }
+
+    /* other screens */
+    .pane {
+      padding: 26px 30px 30px;
+      min-height: 470px
+    }
+
+    .pane h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 4px
+    }
+
+    .pane .sub {
+      color: var(--muted);
+      margin: 0 0 20px
+    }
+
+    .tablewrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 620px
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap
+    }
+
+    th {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--muted)
+    }
+
+    td.tt {
+      font-family: var(--digits);
+      font-weight: 700;
+      font-size: 15px;
+      font-variant-numeric: tabular-nums
+    }
+
+    td.sr {
+      color: var(--muted)
+    }
+
+    tr:last-child td {
+      border-bottom: 0
+    }
+
+    tr.today td {
+      background: var(--hi)
+    }
+
+    tr.today td:first-child {
+      box-shadow: inset 3px 0 0 var(--accent)
+    }
+
+    .jum {
+      font-family: var(--ui);
+      font-size: 10px;
+      color: var(--accent);
+      font-weight: 600;
+      margin-left: 6px
+    }
+
+    .group {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--display) 45%, var(--bg));
+      margin-bottom: 18px
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .item:last-child {
+      border-bottom: 0
+    }
+
+    .item .lbl {
+      font-weight: 500
+    }
+
+    .item .hint {
+      color: var(--muted);
+      font-size: 12px
+    }
+
+    .item select {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 4px 8px
+    }
+
+    .switch {
+      position: relative;
+      width: 38px;
+      height: 22px;
+      flex: none
+    }
+
+    .switch input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      margin: 0;
+      cursor: pointer
+    }
+
+    .switch span {
+      position: absolute;
+      inset: 0;
+      border-radius: 11px;
+      background: var(--line);
+      transition: background .2s;
+      pointer-events: none
+    }
+
+    .switch span::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+      transition: transform .2s
+    }
+
+    .switch input:checked+span {
+      background: var(--accent)
+    }
+
+    .switch input:checked+span::after {
+      transform: translateX(16px)
+    }
+
+    .switch input:focus-visible+span {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px
+    }
+
+    .pill {
+      display: inline-flex;
+      background: var(--line);
+      border-radius: 7px;
+      padding: 2px
+    }
+
+    .pill button {
+      border: 0;
+      background: transparent;
+      padding: 3px 12px;
+      border-radius: 5px;
+      cursor: pointer
+    }
+
+    .pill button[aria-pressed="true"] {
+      background: var(--bg);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .15)
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: var(--bg);
+      border-radius: 6px;
+      padding: 5px 12px;
+      cursor: pointer
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: transparent
+    }
+
+    .right {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .lead {
+      max-width: 62ch
+    }
+
+    /* notification banner */
+    .toast {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 36px);
+      right: 16px;
+      width: 340px;
+      max-width: calc(100% - 32px);
+      z-index: 10;
+      background: color-mix(in srgb, var(--bg) 85%, transparent);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .25), 0 0 0 .5px var(--line);
+      transform: translateX(120%);
+      transition: transform .35s cubic-bezier(.2, .8, .2, 1)
+    }
+
+    .toast.show {
+      transform: none
+    }
+
+    .appicon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: var(--red);
+      color: var(--onred);
+      display: grid;
+      place-items: center;
+      font-family: var(--digits);
+      font-weight: 900;
+      font-size: 17px;
+      flex: none
+    }
+
+    .toast b {
+      display: block;
+      font-size: 13px
+    }
+
+    .toast p {
+      margin: 1px 0 0;
+      font-size: 12.5px
+    }
+
+    .toast small {
+      color: var(--muted);
+      font-size: 11.5px
+    }
+
+    .note {
+      max-width: 940px;
+      margin: 14px auto 0;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center
+    }
+
+    @media (max-width:760px) {
+      .stage {
+        padding: 18px 10px 40px
+      }
+
+      .face {
+        grid-template-columns: 1fr
+      }
+
+      .display {
+        order: -1;
+        margin: 12px 12px 0
+      }
+
+      .timeline {
+        margin-top: 12px
+      }
+
+      .titlebar {
+        grid-template-columns: auto 1fr;
+        gap: 10px
+      }
+
+      .tb-right,
+      .mb-menus {
+        display: none
+      }
+
+      .seg {
+        justify-self: end;
+        overflow-x: auto
+      }
+
+      .seg button {
+        padding: 4px 9px
+      }
+
+      .pane {
+        padding: 20px 16px
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      * {
+        transition: none !important
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="menubar" role="presentation">
+    <b>Salah</b>
+    <div class="mb-menus"><span>File</span><span>Edit</span><span>View</span><span>Window</span><span>Help</span></div>
+    <div class="grow"></div>
+    <div class="mb-extra" id="mbExtra" title="Salah menu bar extra">☾ <span id="mbText">—</span></div>
+    <div id="mbClock" style="font-variant-numeric:tabular-nums">—</div>
+  </div>
+
+  <div class="stage">
+    <div class="window">
+      <div class="titlebar">
+        <div class="lights" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="seg" role="tablist" aria-label="Screens">
+          <button role="tab" aria-selected="true" data-tab="today">Today</button>
+          <button role="tab" aria-selected="false" data-tab="schedule">Schedule</button>
+          <button role="tab" aria-selected="false" data-tab="reminders">Reminders</button>
+          <button role="tab" aria-selected="false" data-tab="settings">Settings</button>
+        </div>
+        <div class="tb-right" id="tbRight">Reminders on</div>
+      </div>
+
+      <!-- TODAY -->
+      <section id="today" class="face" role="tabpanel">
+        <aside class="timeline">
+          <button class="datebtn" id="dateBtn" aria-label="Choose date">
+            <div class="date" id="gDate">—</div>
+            <div class="hijri" id="hDate">—</div>
+          </button>
+          <ol class="rows" id="rows"></ol>
+          <div class="method" id="methodLbl">—</div>
+        </aside>
+
+        <div class="display" id="display" aria-live="off">
+          <div class="status"><span id="statusLbl">NEXT PRAYER</span><span class="tag" id="tagLbl"></span></div>
+          <div class="pname" id="pName">—</div>
+          <div class="ptime" id="pTime">—</div>
+          <div class="rule"></div>
+          <div class="countdown" id="countdown">—</div>
+          <dl class="detail-meta" id="detailMeta"></dl>
+          <div class="foot">
+            <div>
+              <button class="locbtn" id="locBtn">Singapore</button>
+              <div id="tzLbl">Asia/Singapore</div>
+            </div>
+            <div style="text-align:right">
+              <div class="clock" id="clock">—</div>
+              <button class="backlink" id="backBtn" hidden>Back to next prayer</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCHEDULE -->
+      <section id="schedule" class="pane" role="tabpanel" hidden>
+        <h2>This week</h2>
+        <p class="sub" id="schedSub">Singapore</p>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Fajr</th>
+                <th>Sunrise</th>
+                <th>Dhuhr</th>
+                <th>Asr</th>
+                <th>Maghrib</th>
+                <th>Isha</th>
+              </tr>
+            </thead>
+            <tbody id="schedBody"></tbody>
+          </table>
+        </div>
+        <p class="sub" style="margin-top:14px">Sunrise marks the end of Fajr and is not a prayer.</p>
+      </section>
+
+      <!-- REMINDERS -->
+      <section id="reminders" class="pane" role="tabpanel" hidden>
+        <h2>Reminders</h2>
+        <p class="sub lead">Salah schedules the next 3 days of reminders. Keep launch at login on so they stay topped
+          up.</p>
+        <div class="group">
+          <div class="item">
+            <div>
+              <div class="lbl">Prayer reminders</div>
+              <div class="hint">Delivered as macOS notifications</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="remAll" checked
+                aria-label="Prayer reminders"><span></span></label>
+          </div>
+        </div>
+        <div class="group" id="remList"></div>
+        <div class="group">
+          <div class="item">
+            <div class="lbl">Sound</div>
+            <select aria-label="Sound">
+              <option>System default</option>
+              <option>Soft chime</option>
+              <option>Silent</option>
+            </select>
+          </div>
+          <div class="item">
+            <div>
+              <div class="lbl">Quiet hours</div>
+              <div class="hint">No reminders 23:00 – 04:30</div>
+            </div>
+            <label class="switch"><input type="checkbox" aria-label="Quiet hours"><span></span></label>
+          </div>
+          <div class="item">
+            <div class="lbl">Check a reminder looks right</div>
+            <button class="btn primary" id="testBtn">Send test notification</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="settings" class="pane" role="tabpanel" hidden>
+        <h2>Settings</h2>
+        <p class="sub">Times update as you change these.</p>
+        <div class="group">
+          <div class="item">
+            <div>
+              <div class="lbl">Location</div>
+              <div class="hint">1.3521° N, 103.8198° E · entered manually</div>
+            </div>
+            <button class="btn">Change…</button>
+          </div>
+          <div class="item">
+            <div class="lbl">Calculation method</div>
+            <select id="methodSel" aria-label="Calculation method"></select>
+          </div>
+          <div class="item">
+            <div>
+              <div class="lbl">Asr</div>
+              <div class="hint">Hanafi places Asr later in the afternoon</div>
+            </div>
+            <select id="madhabSel" aria-label="Asr madhab">
+              <option value="1">Shafi'i, Maliki, Hanbali</option>
+              <option value="2">Hanafi</option>
+            </select>
+          </div>
+        </div>
+        <div class="group">
+          <div class="item">
+            <div class="lbl">Clock</div>
+            <div class="pill" id="clockPill"><button aria-pressed="true" data-h="24">24-hour</button><button
+                aria-pressed="false" data-h="12">12-hour</button></div>
+          </div>
+          <div class="item">
+            <div class="lbl">Appearance</div>
+            <div class="pill" id="themePill"><button aria-pressed="true" data-t="system">System</button><button
+                aria-pressed="false" data-t="light">Light</button><button aria-pressed="false"
+                data-t="dark">Dark</button></div>
+          </div>
+          <div class="item">
+            <div>
+              <div class="lbl">Show Jumu'ah on Fridays</div>
+              <div class="hint">Relabels Dhuhr on Fridays</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="jumSw" checked
+                aria-label="Show Jumu'ah on Fridays"><span></span></label>
+          </div>
+          <div class="item">
+            <div class="lbl">Launch at login</div>
+            <label class="switch"><input type="checkbox" checked aria-label="Launch at login"><span></span></label>
+          </div>
+        </div>
+        <p class="sub lead">Calculated times are approximations. Your local authority may differ by a few minutes;
+          adjust per prayer if needed.</p>
+      </section>
+    </div>
+  </div>
+  <p class="note">Interactive mock. Times are calculated live for Singapore in the browser to preview the design; the
+    app itself uses adhan-swift.</p>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <div class="appicon">S</div>
+    <div><b>Salah</b>
+      <p id="toastTitle">Asr in 10 minutes</p><small id="toastBody">4:05 PM · Singapore</small>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      /* ---------- prayer calculation (mock only; mirrors PrayTimes-style formulas) ---------- */
+      const D2R = Math.PI / 180, sin = d => Math.sin(d * D2R), cos = d => Math.cos(d * D2R), tan = d => Math.tan(d * D2R),
+        asin = x => Math.asin(x) / D2R, acos = x => Math.acos(x) / D2R, atan2 = (y, x) => Math.atan2(y, x) / D2R, acot = x => Math.atan(1 / x) / D2R,
+        fixA = a => { a = a - 360 * Math.floor(a / 360); return a < 0 ? a + 360 : a }, fixH = a => { a = a - 24 * Math.floor(a / 24); return a < 0 ? a + 24 : a };
+      function julian(y, m, d) { if (m <= 2) { y--; m += 12 } const A = Math.floor(y / 100), B = 2 - A + Math.floor(A / 4); return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + d + B - 1524.5 }
+      function sunPos(jd) {
+        const D = jd - 2451545, g = fixA(357.529 + .98560028 * D), q = fixA(280.459 + .98564736 * D), L = fixA(q + 1.915 * sin(g) + .02 * sin(2 * g)), e = 23.439 - .00000036 * D;
+        const RA = atan2(cos(e) * sin(L), cos(L)) / 15; return { decl: asin(sin(e) * sin(L)), eqt: q / 15 - fixH(RA) }
+      }
+
+      const METHODS = {
+        muis: { name: "Singapore (MUIS)", fajr: 20, isha: 18 },
+        mwl: { name: "Muslim World League", fajr: 18, isha: 17 },
+        isna: { name: "North America (ISNA)", fajr: 15, isha: 15 },
+        egypt: { name: "Egyptian General Authority", fajr: 19.5, isha: 17.5 },
+        karachi: { name: "Karachi", fajr: 18, isha: 18 },
+        uaq: { name: "Umm al-Qura", fajr: 18.5, ishaMin: 90 },
+        kemenag: { name: "Custom — Kemenag (20° / 18°)", fajr: 20, isha: 18 }
+      };
+      const LOC = { name: "Singapore", lat: 1.3521, lng: 103.8198, tz: 8, tzName: "Asia/Singapore" };
+      const state = { method: "muis", asr: 1, h24: true, jumuah: true, rem: { fajr: [true, 15], dhuhr: [true, 10], asr: [true, 10], maghrib: [true, 5], isha: [true, 10] }, remAll: true, detail: null };
+
+      function compute(y, m, d) {
+        const { lat, lng, tz } = LOC, M = METHODS[state.method], jd = julian(y, m, d) - lng / (15 * 24);
+        const mid = t => fixH(12 - sunPos(jd + t).eqt);
+        const ang = (a, t, ccw) => { const dc = sunPos(jd + t).decl, T = acos((-sin(a) - sin(dc) * sin(lat)) / (cos(dc) * cos(lat))) / 15; return mid(t) + (ccw ? -T : T) };
+        const asrT = (f, t) => { const dc = sunPos(jd + t).decl; return ang(-acot(f + tan(Math.abs(lat - dc))), t) };
+        const adj = h => (h + tz - lng / 15) * 60;
+        const fajr = ang(M.fajr, 5 / 24, true), sunrise = ang(.833, 6 / 24, true), dhuhr = mid(.5) + 1 / 60, asr = asrT(state.asr, 13 / 24),
+          maghrib = ang(.833, 18 / 24), isha = M.ishaMin ? maghrib + M.ishaMin / 60 : ang(M.isha, 18 / 24);
+        return { fajr: adj(fajr), sunrise: adj(sunrise), dhuhr: adj(dhuhr), asr: adj(asr), maghrib: adj(maghrib), isha: adj(isha) };
+      }
+
+      /* ---------- time helpers (all in the location's zone) ---------- */
+      function locNow() {
+        const d = new Date(Date.now() + LOC.tz * 3600e3); return {
+          y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate(), dow: d.getUTCDay(),
+          mins: d.getUTCHours() * 60 + d.getUTCMinutes() + d.getUTCSeconds() / 60 + d.getUTCMilliseconds() / 60000, date: d
+        }
+      }
+      function shiftDay(n, k) { const d = new Date(Date.UTC(n.y, n.m - 1, n.d + k)); return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate(), dow: d.getUTCDay(), date: d } }
+      function fmt(mins, parts) {
+        let t = Math.round(mins); t = ((t % 1440) + 1440) % 1440; let h = Math.floor(t / 60), m = t % 60;
+        if (state.h24) { const s = String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0"); return parts ? { t: s, ap: "" } : s }
+        const ap = h < 12 ? "AM" : "PM"; h = h % 12 || 12; const s = h + ":" + String(m).padStart(2, "0"); return parts ? { t: s, ap } : s + " " + ap
+      }
+      function hms(sec) { sec = Math.max(0, Math.floor(sec)); return [Math.floor(sec / 3600), Math.floor(sec % 3600 / 60), sec % 60].map(v => String(v).padStart(2, "0")).join(":") }
+      function short(sec) { const m = Math.ceil(sec / 60); return m >= 60 ? Math.floor(m / 60) + "h " + (m % 60) + "m" : m + "m" }
+      const WD = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const MO = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      function hijri(date) { try { return new Intl.DateTimeFormat("en-u-ca-islamic-umalqura", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(date).replace(/ AH$/, "") + " AH" } catch (e) { return "" } }
+      const ORDER = ["fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"], PRAYERS = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
+      function label(k, dow) { if (k === "dhuhr" && dow === 5 && state.jumuah) return "Jumu'ah"; return k[0].toUpperCase() + k.slice(1) }
+
+      /* ---------- resolve next / now ---------- */
+      const NOW_WINDOW = 15;
+      function resolve() {
+        const n = locNow(), today = compute(n.y, n.m, n.d);
+        let cur = null, nowP = null;
+        for (const k of PRAYERS) { if (today[k] <= n.mins) cur = k; if (today[k] <= n.mins && n.mins < today[k] + NOW_WINDOW) nowP = k; }
+        if (cur === "fajr" && n.mins >= today.sunrise) cur = null;
+        let next = PRAYERS.find(k => today[k] > n.mins), tomorrow = false, nextMins, nextDow = n.dow;
+        if (next) { nextMins = today[next] } else { const t = shiftDay(n, 1), tt = compute(t.y, t.m, t.d); next = "fajr"; nextMins = tt.fajr + 1440; tomorrow = true; nextDow = t.dow }
+        return { n, today, cur, nowP, next, nextMins, tomorrow, nextDow, secs: (nextMins - n.mins) * 60 };
+      }
+
+      /* ---------- render ---------- */
+      const $ = id => document.getElementById(id);
+      let lastDayKey = "";
+      function renderTimeline(r) {
+        const { n, today } = r; $("gDate").textContent = WD[n.dow] + ", " + n.d + " " + MO[n.m - 1];
+        $("hDate").textContent = hijri(n.date); $("methodLbl").textContent = METHODS[state.method].name + (state.asr === 2 ? " · Hanafi Asr" : "");
+        $("rows").innerHTML = ORDER.map(k => {
+          const p = fmt(today[k], true), cls = ["row", k === "sunrise" ? "sunrise" : "",
+            (!r.tomorrow && k === r.next) || (r.tomorrow && false) ? "next" : "", k === r.cur && k !== r.next ? "current" : "",
+            today[k] < n.mins && k !== r.cur ? "past" : ""].join(" ");
+          const nm = label(k, n.dow);
+          return `<li class="${cls}"><button data-k="${k}" aria-label="${nm}, ${fmt(today[k])}${k === r.next && !r.tomorrow ? ", next prayer" : ""}">
+      <span class="mark"></span><span class="name">${nm}</span><span class="t">${p.t}${p.ap ? `<span class="ampm">${p.ap}</span>` : ""}</span></button></li>`
+        }).join("");
+        $("rows").querySelectorAll("button").forEach(b => b.onclick = () => { state.detail = b.dataset.k; tick(true) });
+      }
+      function renderSchedule() {
+        const n = locNow(); let html = "";
+        for (let i = 0; i < 7; i++) {
+          const d = shiftDay(n, i), t = compute(d.y, d.m, d.d);
+          html += `<tr class="${i === 0 ? "today" : ""}"><td>${WD[d.dow].slice(0, 3)}, ${d.d} ${MO[d.m - 1].slice(0, 3)}</td>` +
+            ORDER.map(k => `<td class="tt ${k === "sunrise" ? "sr" : ""}">${fmt(t[k])}${k === "dhuhr" && d.dow === 5 && state.jumuah ? '<span class="jum">Jumu\'ah</span>' : ""}</td>`).join("") + "</tr>"
+        }
+        $("schedBody").innerHTML = html; $("schedSub").textContent = LOC.name + " · " + METHODS[state.method].name;
+      }
+      function renderReminders() {
+        const leads = [[0, "At prayer time"], [5, "5 min before"], [10, "10 min before"], [15, "15 min before"], [30, "30 min before"]];
+        $("remList").innerHTML = PRAYERS.map(k => {
+          const [on, lead] = state.rem[k];
+          return `<div class="item"><div class="lbl">${k[0].toUpperCase() + k.slice(1)}</div><div class="right">
+      <select data-k="${k}" aria-label="${k} reminder timing" ${on && state.remAll ? "" : "disabled"}>${leads.map(([v, l]) => `<option value="${v}" ${v === lead ? "selected" : ""}>${l}</option>`).join("")}</select>
+      <label class="switch"><input type="checkbox" data-k="${k}" ${on ? "checked" : ""} ${state.remAll ? "" : "disabled"} aria-label="${k} reminder"><span></span></label></div></div>`
+        }).join("");
+        $("remList").querySelectorAll("input").forEach(i => i.onchange = () => { state.rem[i.dataset.k][0] = i.checked; renderReminders() });
+        $("remList").querySelectorAll("select").forEach(s => s.onchange = () => { state.rem[s.dataset.k][1] = +s.value });
+        $("tbRight").textContent = state.remAll ? "Reminders on" : "Reminders off";
+      }
+
+      let prevSec = -1;
+      function tick(force) {
+        const r = resolve(), n = r.n, dayKey = n.y + "-" + n.m + "-" + n.d + state.method + state.asr + state.h24 + state.jumuah + r.next + r.cur;
+        if (force || dayKey !== lastDayKey) { renderTimeline(r); lastDayKey = dayKey }
+        const sec = Math.floor(n.mins * 60); if (!force && sec === prevSec) return; prevSec = sec;
+
+        const disp = $("display"), det = state.detail;
+        disp.classList.toggle("detail", !!det); $("backBtn").hidden = !det;
+        if (det) {
+          const nm = label(det, n.dow), t = fmt(r.today[det], true), rem = state.rem[det];
+          disp.classList.remove("is-now");
+          $("statusLbl").textContent = det === "sunrise" ? "SUNRISE" : "PRAYER DETAIL"; $("tagLbl").textContent = "";
+          $("pName").textContent = nm; $("pTime").innerHTML = t.t + (t.ap ? `<small>${t.ap}</small>` : "");
+          $("countdown").innerHTML = "";
+          $("detailMeta").innerHTML = (det === "sunrise" ? `<dt>Note</dt><dd>End of Fajr time; not a prayer</dd>` :
+            `<dt>Reminder</dt><dd>${state.remAll && rem[0] ? (rem[1] ? rem[1] + " min before" : "At prayer time") : "Off"}</dd>`) +
+            `<dt>Method</dt><dd>${METHODS[state.method].name}</dd><dt>Offset</dt><dd>None</dd>`;
+        } else if (r.nowP) {
+          disp.classList.add("is-now");
+          const t = fmt(r.today[r.nowP], true), since = (n.mins - r.today[r.nowP]) * 60;
+          $("statusLbl").textContent = "NOW"; $("tagLbl").textContent = "";
+          $("pName").textContent = label(r.nowP, n.dow); $("pTime").innerHTML = t.t + (t.ap ? `<small>${t.ap}</small>` : "");
+          $("countdown").innerHTML = `<span>STARTED</span>${hms(since)}`;
+        } else {
+          disp.classList.remove("is-now");
+          const t = fmt(r.nextMins, true);
+          $("statusLbl").textContent = "NEXT PRAYER"; $("tagLbl").textContent = r.tomorrow ? "TOMORROW" : "";
+          $("pName").textContent = label(r.next, r.nextDow); $("pTime").innerHTML = t.t + (t.ap ? `<small>${t.ap}</small>` : "");
+          $("countdown").innerHTML = `<span>IN</span>${hms(r.secs)}`;
+        }
+        const clk = fmt(n.mins); const s = String(Math.floor(n.mins * 60) % 60).padStart(2, "0");
+        $("clock").textContent = state.h24 ? clk + ":" + s : clk;
+        $("mbText").textContent = r.nowP ? label(r.nowP, n.dow) + " · now" : label(r.next, r.nextDow) + " · " + short(r.secs);
+        $("mbClock").textContent = WD[n.dow].slice(0, 3) + " " + fmt(n.mins);
+      }
+
+      /* ---------- wiring ---------- */
+      document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
+        document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-selected", x === b));
+        ["today", "schedule", "reminders", "settings"].forEach(id => $(id).hidden = id !== b.dataset.tab);
+        if (b.dataset.tab === "schedule") renderSchedule();
+      });
+      function go(tab) { document.querySelector(`.seg button[data-tab="${tab}"]`).click() }
+      $("backBtn").onclick = () => { state.detail = null; tick(true) };
+      $("locBtn").onclick = () => go("settings");
+      $("dateBtn").onclick = () => go("schedule");
+      document.addEventListener("keydown", e => {
+        if ((e.metaKey || e.ctrlKey) && /^[1-4]$/.test(e.key)) { e.preventDefault(); go(["today", "schedule", "reminders", "settings"][e.key - 1]) }
+        if (e.key === "Escape" && state.detail) { state.detail = null; tick(true) }
+      });
+
+      const ms = $("methodSel"); ms.innerHTML = Object.entries(METHODS).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join("");
+      ms.onchange = () => { state.method = ms.value; tick(true); renderSchedule() };
+      $("madhabSel").onchange = e => { state.asr = +e.target.value; tick(true); renderSchedule() };
+      $("jumSw").onchange = e => { state.jumuah = e.target.checked; tick(true); renderSchedule() };
+      $("clockPill").querySelectorAll("button").forEach(b => b.onclick = () => {
+        state.h24 = b.dataset.h === "24";
+        $("clockPill").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); tick(true); renderSchedule()
+      });
+      $("themePill").querySelectorAll("button").forEach(b => b.onclick = () => {
+        const t = b.dataset.t;
+        if (t === "system") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t);
+        $("themePill").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b))
+      });
+      $("remAll").onchange = e => { state.remAll = e.target.checked; renderReminders() };
+
+      let toastTimer;
+      $("testBtn").onclick = () => {
+        const r = resolve(), k = r.next, lead = state.rem[k][1] || 10;
+        $("toastTitle").textContent = `${label(k, r.nextDow)} in ${lead} minutes`;
+        $("toastBody").textContent = `${fmt(r.nextMins)} · ${LOC.name}`;
+        const t = $("toast"); t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 4500)
+      };
+
+      renderReminders(); tick(true);
+      let timer = setInterval(tick, 250);
+      document.addEventListener("visibilitychange", () => { clearInterval(timer); if (!document.hidden) { tick(true); timer = setInterval(tick, 250) } });
+    })();
+  </script>
+</body>
+
+</html>
