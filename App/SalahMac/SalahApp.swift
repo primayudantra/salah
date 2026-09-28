@@ -3,6 +3,7 @@ import SwiftUI
 
 @main
 struct SalahApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var model: AppModel
 
     init() {
@@ -18,6 +19,8 @@ struct SalahApp: App {
         Window("Salah", id: "main") {
             RootView()
                 .environmentObject(model)
+                .onAppear { model.mainWindowDidOpen() }
+                .onDisappear { model.mainWindowDidClose() }
         }
         .defaultSize(width: 940, height: 560)
         .windowResizability(.contentMinSize)
@@ -28,6 +31,10 @@ struct SalahApp: App {
             }
             CommandGroup(after: .appInfo) {
                 Button("Install Command Line Tool…") { model.installCommandLineTool() }
+            }
+            CommandGroup(replacing: .appTermination) {
+                Button("Quit Salah") { NSApp.terminate(nil) }
+                    .keyboardShortcut("q")
             }
             CommandGroup(before: .toolbar) {
                 ForEach(Array(AppModel.Tab.allCases.enumerated()), id: \.element) { i, tab in
@@ -48,5 +55,18 @@ struct SalahApp: App {
             MenuBarLabel(model: model, ticker: model.ticker)
         }
         .menuBarExtraStyle(.window)
+    }
+}
+
+/// Keeps Salah alive when its window closes, and reopens the window when the app is
+/// launched again (Finder, Spotlight, Dock) while already running.
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    static let reopenNotification = Notification.Name("SalahReopenMainWindow")
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag { NotificationCenter.default.post(name: Self.reopenNotification, object: nil) }
+        return true
     }
 }

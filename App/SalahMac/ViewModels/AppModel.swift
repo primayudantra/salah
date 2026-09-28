@@ -134,6 +134,7 @@ final class AppModel: ObservableObject {
 
     private func didChange(from old: SalahConfig) {
         if old.display.theme != config.display.theme { applyAppearance() }
+        if old.display.showMenuBarExtra != config.display.showMenuBarExtra { applyDockPolicy() }
         if old.launchAtLogin != config.launchAtLogin { applyLaunchAtLogin() }
         if old.reminders.enabled != config.reminders.enabled, config.reminders.enabled {
             Task { await ensureAuthorization() }
@@ -203,6 +204,9 @@ final class AppModel: ObservableObject {
         observers.append(nc.addObserver(forName: .NSSystemClockDidChange, object: nil, queue: .main, using: refresh))
         observers.append(nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: .main, using: refresh))
         observers.append(nc.addObserver(forName: .NSCalendarDayChanged, object: nil, queue: .main, using: refresh))
+        observers.append(nc.addObserver(forName: AppDelegate.reopenNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.showMainWindow() }
+        })
         observers.append(nc.addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated {
                 guard let self else { return }
@@ -218,6 +222,41 @@ final class AppModel: ObservableObject {
             self.plannedDay = day
             replan()
         }
+    }
+
+    // MARK: - Window and Dock
+
+    /// Opens the main window. Set by views that can reach SwiftUI's `openWindow`.
+    var openMainWindowAction: (() -> Void)?
+    private(set) var isMainWindowOpen = false
+
+    /// Brings back the main window, e.g. from the menu bar or when the app is opened again.
+    func showMainWindow() {
+        NSApp.setActivationPolicy(.regular)
+        openMainWindowAction?()
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    func mainWindowDidOpen() {
+        isMainWindowOpen = true
+        applyDockPolicy()
+    }
+
+    /// Closing the window keeps Salah running in the menu bar (so reminders stay topped up);
+    /// only Quit ends the app.
+    func mainWindowDidClose() {
+        isMainWindowOpen = false
+        applyDockPolicy()
+    }
+
+    /// Dock icon while the window is open. With the window closed, Salah lives only in the
+    /// menu bar — unless the menu bar item is off, in which case the Dock icon stays so the
+    /// window can still be reopened.
+    private func applyDockPolicy() {
+        let policy: NSApplication.ActivationPolicy =
+            isMainWindowOpen || !config.display.showMenuBarExtra ? .regular : .accessory
+        guard NSApp.activationPolicy() != policy else { return }
+        NSApp.setActivationPolicy(policy)
     }
 
     // MARK: - Appearance and login item

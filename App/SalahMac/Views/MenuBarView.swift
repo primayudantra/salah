@@ -5,6 +5,7 @@ import SwiftUI
 struct MenuBarLabel: View {
     @ObservedObject var model: AppModel
     @ObservedObject var ticker: Ticker
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         let text = labelText
@@ -13,6 +14,8 @@ struct MenuBarLabel: View {
             if let text { Text(text).monospacedDigit() }
         }
         .accessibilityLabel(text.map { "Salah, \($0)" } ?? "Salah")
+        // The label lives as long as the app, so it can reopen the window after it was closed.
+        .onAppear { model.openMainWindowAction = { openWindow(id: "main") } }
     }
 
     private var labelText: String? {
@@ -38,7 +41,6 @@ struct MenuBarLabel: View {
 struct MenuBarView: View {
     @EnvironmentObject private var model: AppModel
     @ObservedObject var ticker: Ticker
-    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         let state = model.clockState(at: ticker.now)
@@ -93,10 +95,7 @@ struct MenuBarView: View {
             .toggleStyle(.switch)
             .tint(Palette.accent)
             HStack {
-                Button("Open Salah") {
-                    openWindow(id: "main")
-                    NSApp.activate(ignoringOtherApps: true)
-                }
+                Button("Open Salah") { model.showMainWindow() }
                 .keyboardShortcut("o")
                 Spacer()
                 Button("Quit") { NSApp.terminate(nil) }

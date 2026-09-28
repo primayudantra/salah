@@ -3,6 +3,7 @@ import SwiftUI
 
 struct RootView: View {
     @EnvironmentObject private var model: AppModel
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         Group {
@@ -37,6 +38,10 @@ struct RootView: View {
         }
         .toolbarBackground(Palette.chrome, for: .windowToolbar)
         .sheet(isPresented: $model.showLocationSheet) { LocationSheet() }
+        .onAppear {
+            // Fallback when the menu bar item is hidden: the Dock icon reopens the window.
+            if model.openMainWindowAction == nil { model.openMainWindowAction = { openWindow(id: "main") } }
+        }
         .onChange(of: model.tab) { _, tab in
             if tab != .today { model.detailPrayer = nil }
         }
