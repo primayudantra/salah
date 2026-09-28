@@ -78,8 +78,17 @@ salah            # today's times
 
 ### Update
 
-Download the new release (or `git pull && scripts/build-app.sh`) and replace **Salah.app** in Applications.
-Your settings are kept.
+**Salah updates itself** (from version 1.1.0 on). About once a day it checks
+[GitHub Releases](https://github.com/primayudantra/salah/releases); when there's a new version it shows
+**“Salah X is available”** in the menu bar popover and in **About**. Click **Update** › **Install and Relaunch**:
+Salah downloads the new version, checks it, replaces itself and reopens, keeping your settings.
+You can also use **Salah › Check for Updates…**, or turn off automatic checks in **About**.
+
+- Auto-update needs Salah to be in a folder you can write to, like **Applications**. If you run it straight from
+  Downloads, it opens the download page instead.
+- **On version 1.0.0?** It has no updater yet: download 1.1.0 once by hand (same steps as installing), and it
+  updates itself from then on.
+- Built from source? `git pull && scripts/build-app.sh`, then copy `build/Salah.app` to Applications again.
 
 ### Uninstall
 
@@ -249,6 +258,8 @@ when a location is set — so DST and date changes are handled by construction.
 ## Privacy
 
 - Everything stays on your Mac. No accounts, analytics or sync.
+- The only other network request is the daily update check to GitHub's public API (no personal data sent;
+  turn it off in About).
 - Location permission is requested only when you choose **Use my location**. Manual entry works without it.
 - City search and place names use Apple's `CLGeocoder`, so search queries (and a coordinate lookup for the place
   name and time zone) are sent to Apple. Coordinates are never sent anywhere else.
@@ -282,8 +293,19 @@ Notifications need that bundle, so run the app from `build/Salah.app`, not `swif
 scripts/package.sh                   # → build/Salah-<version>-macOS.zip (universal)
 ```
 
-Bump `CFBundleShortVersionString` in `App/SalahMac/Info.plist` (and `SalahInfo.version`), then on GitHub:
-**Releases › Draft a new release**, tag `v<version>`, and attach the zip.
+1. Bump `CFBundleShortVersionString` (and `CFBundleVersion`) in `App/SalahMac/Info.plist` and `SalahInfo.version`.
+2. Commit, then `scripts/package.sh`.
+3. Tag and publish (needs the GitHub CLI):
+
+   ```sh
+   git tag -a v1.2.0 -m "Salah 1.2.0" && git push origin main v1.2.0
+   command gh release create v1.2.0 build/Salah-1.2.0-macOS.zip --title "Salah 1.2.0" --notes "What changed…"
+   ```
+
+Installed copies pick it up automatically. The updater reads the **latest non-draft, non-prerelease** release, so
+publish betas as prereleases. It expects the asset name `Salah-<version>-macOS.zip`, the tag `v<version>` matching
+the app's `CFBundleShortVersionString`, and the bundle ID `com.techwithprima.salah`; it rejects downloads whose
+version, bundle ID or code signature don't check out.
 
 ### Signing and notarization
 
@@ -333,9 +355,9 @@ All time-dependent logic takes an injected `now`; the CLI honours `SALAH_NOW` (I
 
 ```
 Package.swift            SalahCore + salah CLI + SalahMac app targets
-Sources/SalahCore/       Calculation, Location, Schedule, Configuration, NotificationPlanning (no UI imports)
+Sources/SalahCore/       Calculation, Location, Schedule, Configuration, NotificationPlanning, Updates (no UI imports)
 Sources/salah/           CLI: Commands/, Output/
-App/SalahMac/            SwiftUI app: Views/, Components/, ViewModels/, Notifications/, Resources/, Info.plist
+App/SalahMac/            SwiftUI app: Views/, Components/, ViewModels/, Notifications/, Updates/, Resources/, Info.plist
 Tests/                   SalahCoreTests, SalahCLITests
 scripts/                 build-app.sh, package.sh, make-assets.sh
 docs/design/mock.html    Interactive design mock

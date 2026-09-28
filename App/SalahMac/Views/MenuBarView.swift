@@ -87,6 +87,7 @@ struct MenuBarView: View {
                 Text("Prayer times can't be calculated for this location today.")
                     .foregroundStyle(Palette.secondary)
             }
+            UpdateRow(updater: model.updater)
             Divider()
             Toggle("Reminders", isOn: Binding(
                 get: { model.config.reminders.enabled },
@@ -106,5 +107,33 @@ struct MenuBarView: View {
         .frame(width: 260)
         .onAppear { model.ticker.setMenuOpen(true) }
         .onDisappear { model.ticker.setMenuOpen(false) }
+    }
+}
+
+/// Shown in the menu bar popover only when an update is ready.
+struct UpdateRow: View {
+    @ObservedObject var updater: Updater
+
+    var body: some View {
+        if let r = updater.availableRelease {
+            Divider()
+            HStack {
+                Image(systemName: "arrow.down.circle.fill").foregroundStyle(Palette.accent)
+                Text(installing ? "Installing \(r.version)…" : "Salah \(r.version) is available")
+                    .font(.system(size: 12.5, weight: .medium))
+                Spacer()
+                if !installing {
+                    Button("Update") { updater.promptToInstall(r) }
+                        .controlSize(.small)
+                }
+            }
+        }
+    }
+
+    private var installing: Bool {
+        switch updater.state {
+        case .downloading, .installing: return true
+        default: return false
+        }
     }
 }

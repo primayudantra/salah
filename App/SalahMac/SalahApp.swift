@@ -30,6 +30,7 @@ struct SalahApp: App {
                     .keyboardShortcut(",")
             }
             CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") { Task { await model.updater.check(userInitiated: true) } }
                 Button("Install Command Line Tool…") { model.installCommandLineTool() }
             }
             CommandGroup(replacing: .appTermination) {

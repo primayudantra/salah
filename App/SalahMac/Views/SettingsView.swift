@@ -141,15 +141,18 @@ struct SettingsView: View {
 }
 
 struct AboutView: View {
+    @EnvironmentObject private var model: AppModel
+
     var body: some View {
-        Pane(title: "About Salah", subtitle: "Version \(SalahInfo.version)") {
+        Pane(title: "About Salah", subtitle: "Version \(model.updater.currentVersion)") {
+            UpdatesGroup(updater: model.updater)
             SettingsGroup {
                 about("Calculation", "Prayer times are calculated by \(SalahInfo.calculationLibrary). Calculated times are approximations; your local authority may differ by several minutes, which is what the per-prayer offsets are for.")
                 about("Hijri date", "Umm al-Qura calendar from Foundation, with a manual ±2 day adjustment for local moon sighting.")
                 about("Font", "Doto by The Doto Project Authors, licensed under the SIL Open Font License 1.1. The license is included in the app bundle (Contents/Resources/Fonts/OFL.txt).")
             }
             SettingsGroup {
-                about("Privacy", "Everything stays on this Mac. No accounts, analytics or sync. Your location is requested only when you choose “Use my location”, and coordinates are never sent anywhere.")
+                about("Privacy", "Everything stays on this Mac. No accounts, analytics or sync. Your location is requested only when you choose “Use my location”, and coordinates are never sent anywhere. Update checks ask GitHub's public API for the latest release and send nothing about you.")
                 about("City search", "City search and place names use Apple's geocoder (CLGeocoder), so search queries and a coordinate lookup are sent to Apple.")
             }
             SettingsGroup {
@@ -167,5 +170,45 @@ struct AboutView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 16).padding(.vertical, 12)
+    }
+}
+
+struct UpdatesGroup: View {
+    @ObservedObject var updater: Updater
+
+    var body: some View {
+        SettingsGroup {
+            SettingsRow(label: "Updates", hint: status) {
+                if let r = updater.availableRelease, !busy {
+                    Button("Install \(r.version)…") { updater.promptToInstall(r) }
+                        .buttonStyle(AccentButtonStyle())
+                } else {
+                    Button("Check Now") { Task { await updater.check(userInitiated: true) } }
+                        .disabled(busy)
+                }
+            }
+            SettingsRow(label: "Check for updates automatically", hint: "Once a day, from GitHub Releases") {
+                Toggle("", isOn: $updater.autoCheck).toggleStyle(.switch).labelsHidden().tint(Palette.accent)
+            }
+        }
+    }
+
+    private var busy: Bool {
+        switch updater.state {
+        case .checking, .downloading, .installing: return true
+        default: return false
+        }
+    }
+
+    private var status: String {
+        switch updater.state {
+        case .idle: return "You have version \(updater.currentVersion)"
+        case .checking: return "Checking…"
+        case .upToDate: return "Up to date (\(updater.currentVersion))"
+        case .available(let r): return "Version \(r.version) is available"
+        case .downloading(let r): return "Downloading \(r.version)…"
+        case .installing(let r): return "Installing \(r.version)…"
+        case .failed(let m): return "Last check failed: \(m)"
+        }
     }
 }

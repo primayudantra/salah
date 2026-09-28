@@ -32,6 +32,7 @@ final class AppModel: ObservableObject {
     let ticker = Ticker()
     let scheduler = NotificationScheduler()
     let locationProvider = LocationProvider()
+    let updater = Updater()
 
     private var watcher: ConfigWatcher?
     private var observers: [NSObjectProtocol] = []
@@ -51,6 +52,7 @@ final class AppModel: ObservableObject {
         observeSystem()
         applyAppearance()
         applyLaunchAtLogin()
+        updater.start()
         Task {
             if config.reminders.enabled, config.location != nil, await scheduler.authorization() == .notDetermined {
                 await scheduler.requestAuthorization()
