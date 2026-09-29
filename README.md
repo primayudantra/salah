@@ -60,10 +60,12 @@ An app you build yourself opens without any Gatekeeper warning.
 
 Salah also lives in the menu bar (☾ Asr · 12m); click it for today's times and a reminders switch.
 
-**Closing the window doesn't quit Salah.** Like Docker Desktop, it keeps running in the menu bar (the Dock icon
-goes away) so reminders stay scheduled. Click the menu bar icon › **Open Salah**, or open the app again, to bring
-the window back. To quit completely, use **Quit** in the menu bar popover or press **⌘Q**.
-(If you turn the menu bar item off in Settings, the Dock icon stays instead, so you can always get back.)
+**Closing or quitting keeps Salah in the menu bar.** Like Docker Desktop, closing the window, pressing **⌘Q**,
+or choosing **Quit** from the Dock or the Salah menu hides the window and Dock icon, but Salah keeps running
+in the menu bar so reminders stay scheduled. Click ☾ › **Open Salah**, or open the app again, to bring the
+window back. To exit for real, choose **Quit Completely** in the ☾ popover or press **⌥⌘Q**.
+(If you turn the menu bar item off in Settings, ⌘Q quits normally, so Salah never runs invisibly. Logging out
+or shutting down always quits it.)
 
 ### Install the terminal command (optional)
 
@@ -105,6 +107,8 @@ You can also use **Salah › Check for Updates…**, or turn off automatic check
 | ← / → | Previous / next day, week or month (Schedule) |
 | T | Back to today |
 | Esc | Close prayer details |
+| ⌘Q | Hide to the menu bar (keeps running) |
+| ⌥⌘Q | Quit completely |
 
 ## CLI usage
 

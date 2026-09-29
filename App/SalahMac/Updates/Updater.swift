@@ -227,7 +227,7 @@ final class Updater: ObservableObject {
         p.arguments = ["-c", script]
         try p.run()
         log.info("Relaunching into the update")
-        NSApp.terminate(nil)
+        AppDelegate.quitCompletely()
     }
 
     private func run(_ tool: String, _ args: [String]) async throws {

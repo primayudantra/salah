@@ -46,6 +46,8 @@ enum SnapshotRenderer {
         shot("reminders", height: 900, RemindersView())
         shot("settings", height: 1300, SettingsView())
         shot("about", AboutView())
+        shot("menubar", width: 260, height: 400, MenuBarView(ticker: model.ticker).background(Palette.background))
+        shot("menubar-dark", dark: true, width: 260, height: 400, MenuBarView(ticker: model.ticker).background(Color(white: 0.17)))
         model.update { $0.location = SavedLocation(name: "Tromsø", latitude: 69.6492, longitude: 18.9553, timeZone: "Europe/Oslo") }
         shot("polar", TodayContent(now: t("2026-06-21T12:00:00+02:00")))
         model.update { $0.location = nil }

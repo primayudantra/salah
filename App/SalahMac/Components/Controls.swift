@@ -74,6 +74,24 @@ struct AccentButtonStyle: ButtonStyle {
     }
 }
 
+/// A quiet bordered button with full-strength text. The system style draws dimmed gray text in
+/// the menu bar popover, which is hard to read.
+struct SecondaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 13, weight: .medium))
+            .foregroundStyle(Palette.text)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 5)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Palette.text.opacity(configuration.isPressed ? 0.22 : 0.12))
+            )
+            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Palette.text.opacity(0.18)))
+            .contentShape(RoundedRectangle(cornerRadius: 6))
+    }
+}
+
 /// Lets offscreen snapshots (which can't draw scroll views) lay content out flat.
 private struct ScrollingDisabledKey: EnvironmentKey {
     static let defaultValue = false

@@ -209,6 +209,12 @@ final class AppModel: ObservableObject {
         observers.append(nc.addObserver(forName: AppDelegate.reopenNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.showMainWindow() }
         })
+        observers.append(nc.addObserver(forName: AppDelegate.hideToMenuBarNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.hideToMenuBar() }
+        })
+        AppDelegate.keepsRunningOnQuit = { [weak self] in
+            MainActor.assumeIsolated { self?.config.display.showMenuBarExtra ?? false }
+        }
         observers.append(nc.addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated {
                 guard let self else { return }
@@ -237,11 +243,23 @@ final class AppModel: ObservableObject {
         NSApp.setActivationPolicy(.regular)
         openMainWindowAction?()
         NSApp.activate(ignoringOtherApps: true)
+        dismissMenuBarPanel()
+    }
+
+    /// Quit without leaving: close the window (the Dock icon follows) and stay in the menu bar.
+    func hideToMenuBar() {
+        log.debug("Windows: \(NSApp.windows.map { "\(type(of: $0)) visible=\($0.isVisible)" }.joined(separator: ", "), privacy: .public)")
+        for window in NSApp.windows where window.canBecomeMain && window.isVisible {
+            window.close()
+        }
+        isMainWindowOpen = false
+        applyDockPolicy()
     }
 
     func mainWindowDidOpen() {
         isMainWindowOpen = true
         applyDockPolicy()
+        dismissMenuBarPanel()
     }
 
     /// Closing the window keeps Salah running in the menu bar (so reminders stay topped up);
@@ -258,7 +276,21 @@ final class AppModel: ObservableObject {
         let policy: NSApplication.ActivationPolicy =
             isMainWindowOpen || !config.display.showMenuBarExtra ? .regular : .accessory
         guard NSApp.activationPolicy() != policy else { return }
+        if policy == .accessory {
+            // Left active with no window, SwiftUI pops the menu bar panel open on its own.
+            // Hide first so focus goes back to the previous app before the switch completes;
+            // clicking ☾ still opens the panel as usual.
+            NSApp.hide(nil)
+        }
         NSApp.setActivationPolicy(policy)
+    }
+
+    /// Closes the menu bar panel if SwiftUI showed it on its own (e.g. when the app is reopened).
+    private func dismissMenuBarPanel() {
+        for window in NSApp.windows where window.isVisible && !window.canBecomeMain
+            && String(describing: type(of: window)).contains("MenuBarExtra") {
+            window.orderOut(nil)
+        }
     }
 
     // MARK: - Appearance and login item

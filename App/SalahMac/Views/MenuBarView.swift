@@ -97,9 +97,11 @@ struct MenuBarView: View {
             .tint(Palette.accent)
             HStack {
                 Button("Open Salah") { model.showMainWindow() }
+                    .buttonStyle(SecondaryButtonStyle())
                 .keyboardShortcut("o")
                 Spacer()
-                Button("Quit") { NSApp.terminate(nil) }
+                Button("Quit Completely") { AppDelegate.quitCompletely() }
+                    .buttonStyle(SecondaryButtonStyle())
                     .keyboardShortcut("q")
             }
         }
@@ -124,7 +126,7 @@ struct UpdateRow: View {
                 Spacer()
                 if !installing {
                     Button("Update") { updater.promptToInstall(r) }
-                        .controlSize(.small)
+                        .buttonStyle(AccentButtonStyle())
                 }
             }
         }
