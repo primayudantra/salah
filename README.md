@@ -1,7 +1,13 @@
 # Salah
 
+[![Latest release](https://img.shields.io/github/v/release/primayudantra/salah?label=download)](https://github.com/primayudantra/salah/releases/latest)
+![macOS 14+](https://img.shields.io/badge/macOS-14%2B-lightgrey)
+![Apple Silicon + Intel](https://img.shields.io/badge/Apple%20Silicon%20%2B%20Intel-universal-lightgrey)
+
 A native macOS prayer-time app and a companion `salah` CLI, sharing one Swift core (`SalahCore`).
 Red prayer timeline, light-gray digital display, pixel digits — a prayer clock brought to life as software.
+
+**[⬇ Download the latest version](https://github.com/primayudantra/salah/releases/latest)** — current: **1.2.0**
 
 - **Salah.app** — dashboard, schedule, reminders, settings, menu bar extra. The only component that schedules notifications.
 - **`salah` CLI** — prayer times, countdowns and schedules in the terminal; edits the same configuration.
@@ -9,14 +15,38 @@ Red prayer timeline, light-gray digital display, pixel digits — a prayer clock
 > Calculated prayer times are approximations. Your local authority may differ by several minutes;
 > use the per-prayer offsets in Settings (or `salah config set calculation.offsets.<prayer> <minutes>`) to match it.
 
+## Features
+
+- **Today at a glance** — next prayer in big pixel digits, a live countdown, and the day's timeline with the
+  Hijri date. On Fridays, Dhuhr shows as **Jumu'ah**.
+- **Reminders** — at prayer time and/or 5, 10, 15 or 30 minutes before, set per prayer, with quiet hours, pause,
+  and a choice of sound. They keep firing even when the window is closed.
+- **Lives in the menu bar** — ☾ Asr · 12m. Closing the window or pressing ⌘Q keeps Salah running there.
+- **Schedule** — day, week or month, with copy, CSV and calendar (ICS) export.
+- **Accurate for where you are** — MUIS, Muslim World League, ISNA, Umm al-Qura, Egypt, Karachi, Dubai, Kuwait,
+  Qatar, Moonsighting Committee, Turkey, Tehran or custom angles; Shafi'i or Hanafi Asr; per-prayer offsets.
+- **Updates itself** from GitHub Releases.
+- **Light and dark mode**, 12- or 24-hour clock.
+- **Terminal command** — `salah` for times, countdowns and settings, with JSON output for scripts.
+- **Private** — no accounts or analytics; everything stays on your Mac.
+
+## What's new in 1.2.0
+
+- **Quit keeps Salah in the menu bar.** ⌘Q, **Quit** in the Dock, or **Salah › Quit Salah** hide the window and
+  Dock icon; Salah keeps running in the menu bar so reminders stay scheduled.
+- **Quit Completely** (☾ popover, or **⌥⌘Q**) exits for real.
+- The menu bar popover no longer opens by itself after quitting or reopening, and its buttons are easier to read.
+
+See the [changelog](#changelog) for earlier versions.
+
 ## Install
 
 Salah runs on **macOS 14 (Sonoma) or later**, on both Apple Silicon and Intel Macs.
 
 ### Option 1 — Download the app (easiest)
 
-1. Go to the [Releases page](https://github.com/primayudantra/salah/releases) and download the latest
-   `Salah-<version>-macOS.zip`.
+1. Go to the [latest release](https://github.com/primayudantra/salah/releases/latest) and download
+   `Salah-1.2.0-macOS.zip` (under **Assets**).
 2. Double-click the zip to unzip it, then drag **Salah.app** into your **Applications** folder.
 3. Open Salah. Because the app isn't notarized by Apple, macOS blocks the first launch:
    - **macOS 14 (Sonoma):** in Finder, right-click **Salah.app** › **Open**, then click **Open** again.
@@ -88,13 +118,16 @@ You can also use **Salah › Check for Updates…**, or turn off automatic check
 
 - Auto-update needs Salah to be in a folder you can write to, like **Applications**. If you run it straight from
   Downloads, it opens the download page instead.
-- **On version 1.0.0?** It has no updater yet: download 1.1.0 once by hand (same steps as installing), and it
-  updates itself from then on.
+- **On version 1.0.0?** It has no updater yet: download the
+  [latest version](https://github.com/primayudantra/salah/releases/latest) once by hand (same steps as
+  installing, replace the old app), and it updates itself from then on.
+- Not sure which version you have? Open Salah › **About**.
 - Built from source? `git pull && scripts/build-app.sh`, then copy `build/Salah.app` to Applications again.
 
 ### Uninstall
 
-1. Quit Salah (menu bar icon › Quit), turn off **Launch at login** first if you like.
+1. Turn off **Launch at login** in Settings, then quit Salah completely: ☾ › **Quit Completely** (or **⌥⌘Q**).
+   Plain ⌘Q only hides it to the menu bar.
 2. Delete **Salah.app** from Applications, and `/usr/local/bin/salah` if you installed the command.
 3. Optionally delete your settings: `~/Library/Application Support/Salah/`.
 
@@ -231,7 +264,7 @@ List every key with `salah config get`. Common ones:
 
 macOS notifications need an app bundle, so **only Salah.app schedules them**. It keeps a rolling window of
 calendar-trigger notifications for the next **3 days** (at most 30, well under macOS's 64-per-app cap).
-Scheduled notifications fire even when Salah is quit.
+Scheduled notifications fire even when Salah is closed or completely quit.
 
 The window is topped up on launch, wake from sleep, local midnight, time or time-zone changes, and any change to
 location, method, offsets or reminder settings (including changes made with the CLI). Each top-up removes all
@@ -298,12 +331,12 @@ scripts/package.sh                   # → build/Salah-<version>-macOS.zip (univ
 ```
 
 1. Bump `CFBundleShortVersionString` (and `CFBundleVersion`) in `App/SalahMac/Info.plist` and `SalahInfo.version`.
-2. Commit, then `scripts/package.sh`.
-3. Tag and publish (needs the GitHub CLI):
+2. Update “What's new” and the changelog in this README, commit, then `scripts/package.sh`.
+3. Tag and publish (needs the GitHub CLI; `command` skips any shell alias named `gh`):
 
    ```sh
-   git tag -a v1.2.0 -m "Salah 1.2.0" && git push origin main v1.2.0
-   command gh release create v1.2.0 build/Salah-1.2.0-macOS.zip --title "Salah 1.2.0" --notes "What changed…"
+   git tag -a v1.3.0 -m "Salah 1.3.0" && git push origin main v1.3.0
+   command gh release create v1.3.0 build/Salah-1.3.0-macOS.zip --title "Salah 1.3.0" --notes "What changed…"
    ```
 
 Installed copies pick it up automatically. The updater reads the **latest non-draft, non-prerelease** release, so
@@ -335,7 +368,7 @@ swift test      # requires Xcode 16+ (XCTest)
   Oslo, Tromsø), offsets, madhab, polar undefined days, DST in New York and London, manual location in a different
   zone from the Mac, after-Isha and midnight rollover, Jumu'ah, the NOW window, Hijri adjustment, the notification
   planner (count, cap, deterministic IDs, quiet hours, pause, input changes), config round-trip/migration/
-  corruption/concurrent atomic writes, config keys, and CSV/ICS export.
+  corruption/concurrent atomic writes, config keys, CSV/ICS export, and version parsing for the updater.
 - `Tests/SalahCLITests` — argument parsing for every command, exit codes, JSON schema, a pretty-output snapshot,
   and no escape codes with `--plain`, `--no-color`, `NO_COLOR` or a non-TTY stdout.
 
@@ -343,6 +376,14 @@ All time-dependent logic takes an injected `now`; the CLI honours `SALAH_NOW` (I
 
 ## Troubleshooting
 
+- **Salah disappeared after ⌘Q or closing the window.** It's still running — look for ☾ in the menu bar and
+  choose **Open Salah**, or open Salah from Applications or Spotlight.
+- **The menu bar icon is gone.** Salah was quit completely, or the menu bar item is turned off in Settings.
+  Open Salah from Applications to start it again. (If the menu bar is crowded, macOS may hide icons behind the
+  notch — try a menu bar manager or turn on **Menu bar › Time only** / **Icon only** in Settings.)
+- **“Salah can't be opened” / “damaged” on first launch.** See step 3 of [Install](#option-1--download-the-app-easiest).
+- **The update opened a web page instead of installing.** Salah isn't in a folder it can write to (for example,
+  it's running from Downloads). Move it to Applications and check again.
 - **No reminders appear.** Open Reminders: check the permission banner (System Settings › Notifications › Salah),
   that reminders aren't paused, and that quiet hours don't cover the prayer. Use **Send test notification**.
 - **Reminders stopped after a few days.** Salah wasn't running for more than 3 days. Turn on Launch at login.
@@ -366,6 +407,21 @@ Tests/                   SalahCoreTests, SalahCLITests
 scripts/                 build-app.sh, package.sh, make-assets.sh
 docs/design/mock.html    Interactive design mock
 ```
+
+## Changelog
+
+### 1.2.0
+- ⌘Q, Dock › Quit and Salah › Quit Salah keep Salah running in the menu bar; **Quit Completely** (⌥⌘Q) exits.
+- Fixed the menu bar popover opening by itself after quitting or reopening.
+- More readable buttons in the menu bar popover.
+
+### 1.1.0
+- Automatic updates from GitHub Releases, plus **Check for Updates…**.
+- Closing the window keeps Salah running in the menu bar; the Dock icon hides until the window is reopened.
+
+### 1.0.0
+- First release: Today dashboard, schedule with export, reminders with a rolling 3-day window, settings,
+  menu bar extra, and the `salah` CLI.
 
 ## Credits and licenses
 
