@@ -81,7 +81,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     /// Run just before a real quit (Quit Completely, log out/shutdown, update relaunch), so
-    /// Prayer Mode can turn off any Focus it turned on and close its card. Set by the model.
+    /// Focus Mode can turn off any Focus it turned on and close its card. Set by the model.
     static var onWillTerminate: () -> Void = {}
 
     func applicationDidFinishLaunching(_ notification: Notification) {

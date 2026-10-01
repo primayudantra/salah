@@ -6,9 +6,9 @@ import Intents
 import OSLog
 import SalahCore
 
-private let log = Logger(subsystem: SalahInfo.appBundleIdentifier, category: "prayer-mode.busy")
+private let log = Logger(subsystem: SalahInfo.appBundleIdentifier, category: "focus-mode.busy")
 
-/// Reports whether the user is on a call or has a Focus on, so Prayer Mode can stand aside.
+/// Reports whether the user is on a call or has a Focus on, so Focus Mode can stand aside.
 /// Salah never opens the mic or camera itself — it only reads whether hardware already in use
 /// by some other process is running, which needs no privacy permission.
 protocol BusyMonitoring: AnyObject {
@@ -297,7 +297,7 @@ final class SystemBusyMonitor: BusyMonitoring {
 // MARK: - Focus Status
 
 /// Whether a Focus is currently on, via `INFocusStatusCenter`. Needs the Focus Status
-/// capability and `NSFocusStatusUsageDescription`; see roadmap/prayer-mode.md open question 2 —
+/// capability and `NSFocusStatusUsageDescription`; see roadmap/focus-mode.md open question 2 —
 /// unverified in a Developer ID (non-App Store) build.
 @MainActor
 enum FocusStatusMonitor {

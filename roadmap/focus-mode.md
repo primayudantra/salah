@@ -1,14 +1,14 @@
-# Salah — Prayer Mode
+# Salah — Focus Mode
 
-Addendum to `SPEC.md`. Design reference: `docs/design/salah-prayer-mode.html`.
+Addendum to `SPEC.md`. Design reference: `docs/design/salah-focus-mode.html`.
 
 > **Status:** built, not yet manually verified. All of v1 (§2) is implemented: the settings screen,
-> menu bar switch, `salah prayer-mode` CLI, the pure planner (§6, with full table-test coverage),
+> menu bar switch, `salah focus-mode` CLI, the pure planner (§6, with full table-test coverage),
 > busy detection (§7), pausing Apple Music/Spotify (§8), Focus via Shortcuts (§9), the full-screen
 > card (§10) and busy nudge (§11), snoozing, auto-close, crash recovery, and the status line.
 >
-> **Covered by automated tests:** `PrayerModePlanner` (every rule in §6, `Tests/SalahCoreTests/PrayerModePlannerTests.swift`),
-> the config schema and migration (`PrayerModeConfigTests.swift`), and the CLI (`PrayerModeCommandTests.swift`).
+> **Covered by automated tests:** `FocusModePlanner` (every rule in §6, `Tests/SalahCoreTests/FocusModePlannerTests.swift`),
+> the config schema and migration (`FocusModeConfigTests.swift`), and the CLI (`FocusModeCommandTests.swift`).
 > These run in CI-equivalent form today even without Xcode (see the repo's testing notes).
 >
 > **Not yet verified — needs a human on real hardware**, because none of it can happen in a
@@ -20,13 +20,13 @@ Addendum to `SPEC.md`. Design reference: `docs/design/salah-prayer-mode.html`.
 > running (§9); the full-screen card actually covering full-screen apps, every display and every
 > Space (§10); and open question 1 (iCloud share links for the two Shortcuts).
 >
-> Code: `Sources/SalahCore/PrayerMode/` (settings, planner), `App/SalahMac/PrayerMode/` (busy
+> Code: `Sources/SalahCore/FocusMode/` (settings, planner), `App/SalahMac/FocusMode/` (busy
 > monitor, media controller, Focus controller, state, coordinator, card and nudge windows),
-> `App/SalahMac/Views/PrayerModeView.swift` (settings screen).
+> `App/SalahMac/Views/FocusModeView.swift` (settings screen).
 
 ## 1. Summary
 
-Prayer Mode is a new top-level screen. It controls what Salah does at prayer time:
+Focus Mode is a new top-level screen. It controls what Salah does at prayer time:
 
 1. Show a calm full-screen card with the prayer name and a Done button.
 2. Pause Apple Music and Spotify, and resume them when the user taps Done.
@@ -34,12 +34,12 @@ Prayer Mode is a new top-level screen. It controls what Salah does at prayer tim
 
 When the user is busy (on a call, or with a Focus already on), Salah does none of these. It shows a small nudge instead and, if the user chose to, shows the card once they're free.
 
-Prayer Mode is off by default.
+Focus Mode is off by default.
 
 ## 2. Scope
 
 **v1 (this spec)**
-- The Prayer Mode screen, menu bar toggle and CLI command.
+- The Focus Mode screen, menu bar toggle and CLI command.
 - The three actions above.
 - Busy detection: calls (mic or camera in use) and an active Focus.
 - Naming the call app in the nudge, on macOS 14.2+.
@@ -54,17 +54,17 @@ Prayer Mode is off by default.
 
 ## 3. Navigation changes (amends SPEC.md section 6)
 
-- Screens become: Today, Schedule, Reminders, **Prayer Mode**, Settings, About.
+- Screens become: Today, Schedule, Reminders, **Focus Mode**, Settings, About.
 - Shortcuts: ⌘1–⌘5 map to the first five screens in that order. ⌘, still opens Settings.
-- **Menu bar popover:** add a "Prayer Mode" switch under the reminders switch. It mirrors the master switch, so it can be turned off quickly for a day.
-- **CLI:** add `salah prayer-mode [on|off|status]`. `status` prints on/off, the prayers it applies to, and which actions are enabled. JSON output is supported.
+- **Menu bar popover:** add a "Focus Mode" switch under the reminders switch. It mirrors the master switch, so it can be turned off quickly for a day.
+- **CLI:** add `salah focus-mode [on|off|status]`. `status` prints on/off, the prayers it applies to, and which actions are enabled. JSON output is supported.
 
-## 4. The Prayer Mode screen
+## 4. The Focus Mode screen
 
 Layout follows the mock, top to bottom.
 
 **Header**
-- Title "Prayer Mode", with a large master switch on the right.
+- Title "Focus Mode", with a large master switch on the right.
 - Subtitle: when on, "On for Dhuhr, Asr, Maghrib, Isha." (the selected prayers); when off, "Clears the way at prayer time. Off until you turn it on."
 - When the master switch is off, everything below is dimmed and disabled, but keeps its values.
 
@@ -106,7 +106,7 @@ The "How?" link explains: System Settings › Focus › Do Not Disturb › turn 
 Add to `config.json` (bump `schemaVersion`; migrate older configs with the master switch off):
 
 ```json
-"prayerMode": {
+"focusMode": {
   "enabled": false,
   "prayers": ["dhuhr", "asr", "maghrib", "isha"],
   "card": { "enabled": true, "autoCloseMinutes": 15 },
@@ -122,7 +122,7 @@ Add to `config.json` (bump `schemaVersion`; migrate older configs with the maste
 
 ## 5. When it runs
 
-Prayer Mode needs Salah.app running. If it isn't, the user just gets the scheduled notification.
+Focus Mode needs Salah.app running. If it isn't, the user just gets the scheduled notification.
 
 - **Trigger:** an in-process wall-clock timer for the next selected prayer. Re-arm it on launch, wake, `NSSystemClockDidChange`, `NSSystemTimeZoneDidChange`, midnight, and any config change.
 - **Once per prayer:** use the ID `<yyyy-MM-dd>.<prayer>`, recorded in `state.json`.
@@ -135,11 +135,11 @@ Prayer Mode needs Salah.app running. If it isn't, the user just gets the schedul
 All decisions are made by one pure function in `SalahCore`:
 
 ```swift
-struct PrayerModeContext {
+struct FocusModeContext {
   let prayer: Prayer
   let prayerTime: Date
   let now: Date
-  let settings: PrayerModeSettings
+  let settings: FocusModeSettings
   let busy: BusyState          // .free, .onCall(appName: String?), .focusOn
   let isScreenLocked: Bool
   let alreadyHandled: Bool
@@ -155,8 +155,8 @@ enum PlannedAction: Equatable {
   case deferUntilFree
 }
 
-enum PrayerModePlanner {
-  static func decide(_ ctx: PrayerModeContext) -> [PlannedAction]
+enum FocusModePlanner {
+  static func decide(_ ctx: FocusModeContext) -> [PlannedAction]
 }
 ```
 
@@ -211,7 +211,7 @@ The app executes planned actions through adapters behind protocols (`BusyMonitor
 - Use `INFocusStatusCenter.default.focusStatus.isFocused`. It only says whether any Focus is on, not which one.
 - Needs the Focus Status capability and `NSFocusStatusUsageDescription`: "Salah checks whether a Focus is on so it doesn't interrupt you at prayer time."
 - Request authorization when the user sets "When a Focus is on" to "Treat as busy". If denied, show "Focus status permission needed" in the status line and treat Focus as not busy.
-- **Verify first** that this capability works in a Developer ID (non-App Store) build. If it doesn't, hide the setting and report. The rest of Prayer Mode doesn't depend on it.
+- **Verify first** that this capability works in a Developer ID (non-App Store) build. If it doesn't, hide the setting and report. The rest of Focus Mode doesn't depend on it.
 - **Ignore Salah's own Focus:** if Salah turned the Focus on (`salahOwnsFocus`), it doesn't count as busy. This matters for snooze re-shows.
 - **Waiting for Focus to end:** there's no documented change notification, so poll every 30 seconds while a deferred card is pending. Stop at the prayer window's end.
 
@@ -298,10 +298,10 @@ Use "a call" when the app is unknown. Never say Salah muted or paused the mic.
 ## 13. Testing
 
 **Unit**
-- `PrayerModePlanner` table tests: master off, prayer not selected, already handled, locked, late, free; on a call with and without card-later; Focus on with `focusIsBusy` on and off; Salah-owned Focus.
+- `FocusModePlanner` table tests: master off, prayer not selected, already handled, locked, late, free; on a call with and without card-later; Focus on with `focusIsBusy` on and off; Salah-owned Focus.
 - Call-app naming with a fake process list: helper-to-parent mapping, exclusions, one or many apps, camera-only, OS earlier than 14.2.
 - Snooze limits, auto-close timing, prayer-window cutoff.
-- Config migration (existing users get the master switch off) and CLI `prayer-mode` commands, including JSON.
+- Config migration (existing users get the master switch off) and CLI `focus-mode` commands, including JSON.
 - Adapter fakes asserting order: pause before card, resume only on Done, Focus off on Done, auto-close, quit and crash recovery.
 
 **Manual** (record in the README)
@@ -329,7 +329,7 @@ Use "a call" when the app is unknown. Never say Salah muted or paused the mic.
 
 ## 15. Definition of done
 
-- [ ] Prayer Mode screen, menu bar switch and `salah prayer-mode` work and stay in sync through the shared config.
+- [ ] Focus Mode screen, menu bar switch and `salah focus-mode` work and stay in sync through the shared config.
 - [ ] Actions run only when enabled, for selected prayers, once per prayer.
 - [ ] When busy, only the nudge appears, with the call app named where possible. The card follows when that's chosen.
 - [ ] Music pauses, and resumes only on Done. Nothing is ever launched.

@@ -1,3 +1,4 @@
+import SalahCore
 import SwiftUI
 
 /// A rounded settings group, as in the mock's Reminders and Settings panes.
@@ -48,6 +49,34 @@ struct SettingsRow<Control: View>: View {
     }
 }
 
+/// A row of color swatches for picking the accent theme (Settings › Appearance).
+struct AccentThemePicker: View {
+    @Binding var selection: AccentTheme
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(AccentTheme.allCases, id: \.self) { theme in
+                Button {
+                    selection = theme
+                } label: {
+                    Circle()
+                        .fill(theme.swatchColor(dark: scheme == .dark))
+                        .frame(width: 22, height: 22)
+                        .overlay(
+                            Circle().strokeBorder(Palette.text, lineWidth: selection == theme ? 2 : 0)
+                                .padding(-3)
+                        )
+                        .overlay(Circle().strokeBorder(Palette.line, lineWidth: selection == theme ? 0 : 1))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(theme.displayName)
+                .accessibilityAddTraits(selection == theme ? [.isSelected] : [])
+            }
+        }
+    }
+}
+
 /// A small segmented pill, matching the mock's clock and appearance selectors.
 struct PillPicker<Value: Hashable>: View {
     let options: [(Value, String)]
@@ -79,10 +108,10 @@ struct AccentButtonStyle: ButtonStyle {
 struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 13, weight: .medium))
+            .font(.system(size: 12.5, weight: .medium))
             .foregroundStyle(Palette.text)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 5)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
             .background(
                 RoundedRectangle(cornerRadius: 6)
                     .fill(Palette.text.opacity(configuration.isPressed ? 0.22 : 0.12))

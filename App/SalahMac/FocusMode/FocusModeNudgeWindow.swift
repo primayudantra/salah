@@ -4,7 +4,7 @@ import SwiftUI
 /// A non-activating floating panel, top right of the screen with the mouse. It never steals
 /// focus or interrupts whatever the user is doing on a call or in a Focus.
 @MainActor
-final class PrayerModeNudgeController {
+final class FocusModeNudgeController {
     /// "Skip this time" — cancels the deferred card for this prayer. "Got it" and auto-hide are
     /// equivalent (the deferred card, if any, was already scheduled by the caller before showing).
     var onSkip: (() -> Void)?

@@ -4,7 +4,7 @@ import SwiftUI
 /// One borderless window per screen, so the card covers every display and every Space. Only the
 /// screen with the mouse shows the prayer name and buttons; the others show just the dimmed blur.
 @MainActor
-final class PrayerModeCardController {
+final class FocusModeCardController {
     var onDone: (() -> Void)?
     var onSnooze: (() -> Void)?
 
@@ -28,7 +28,7 @@ final class PrayerModeCardController {
             window.hasShadow = false
             window.isReleasedWhenClosed = false
 
-            let view = PrayerModeCardView(
+            let view = FocusModeCardView(
                 prayerName: prayerName, timeText: timeText, locationName: locationName, pills: pills,
                 autoCloseMinutes: autoCloseMinutes, showContent: screen == mainScreen, reduceMotion: reduceMotion,
                 onDone: { [weak self] in self?.onDone?() }, onSnooze: { [weak self] in self?.onSnooze?() }
@@ -88,7 +88,7 @@ private struct DarkBlur: NSViewRepresentable {
     func updateNSView(_ nsView: NSVisualEffectView, context: Context) {}
 }
 
-struct PrayerModeCardView: View {
+struct FocusModeCardView: View {
     let prayerName: String
     let timeText: String
     let locationName: String

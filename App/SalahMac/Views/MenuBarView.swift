@@ -89,27 +89,28 @@ struct MenuBarView: View {
             }
             UpdateRow(updater: model.updater)
             Divider()
-            Toggle("Reminders", isOn: Binding(
-                get: { model.config.reminders.enabled },
-                set: { v in model.update { $0.reminders.enabled = v } }
-            ))
-            .toggleStyle(.switch)
-            .tint(Palette.accent)
-            Toggle("Prayer Mode", isOn: Binding(
-                get: { model.config.prayerMode.enabled },
-                set: { v in model.update { $0.prayerMode.enabled = v } }
-            ))
-            .toggleStyle(.switch)
-            .tint(Palette.accent)
-            HStack {
+            VStack(spacing: 10) {
+                MenuBarToggleRow(label: "Reminders", isOn: Binding(
+                    get: { model.config.reminders.enabled },
+                    set: { v in model.update { $0.reminders.enabled = v } }
+                ))
+                MenuBarToggleRow(label: "Focus Mode", isOn: Binding(
+                    get: { model.config.focusMode.enabled },
+                    set: { v in model.update { $0.focusMode.enabled = v } }
+                ))
+            }
+            HStack(spacing: 8) {
                 Button("Open Salah") { model.showMainWindow() }
                     .buttonStyle(SecondaryButtonStyle())
-                .keyboardShortcut("o")
-                Spacer()
+                    .keyboardShortcut("o")
+                    .frame(maxWidth: .infinity)
                 Button("Quit Completely") { AppDelegate.quitCompletely() }
                     .buttonStyle(SecondaryButtonStyle())
                     .keyboardShortcut("q")
+                    .frame(maxWidth: .infinity)
             }
+            .lineLimit(1)
+            .minimumScaleFactor(0.85)
         }
         .padding(14)
         .frame(width: 260)
@@ -147,5 +148,26 @@ struct UpdateRow: View {
         case .downloading, .installing: return true
         default: return false
         }
+    }
+}
+
+/// A switch row for the menu bar popover: label left, switch pinned right, same height and
+/// baseline as its neighbors, with the keyboard focus ring suppressed (it otherwise lands on
+/// whichever row happens to be first when the popover opens, which read as a stray outline).
+private struct MenuBarToggleRow: View {
+    let label: String
+    @Binding var isOn: Bool
+
+    var body: some View {
+        HStack {
+            Text(label).font(.system(size: 13))
+            Spacer(minLength: 12)
+            Toggle("", isOn: $isOn)
+                .toggleStyle(.switch)
+                .labelsHidden()
+                .tint(Palette.accent)
+                .focusEffectDisabled()
+        }
+        .frame(height: 20)
     }
 }

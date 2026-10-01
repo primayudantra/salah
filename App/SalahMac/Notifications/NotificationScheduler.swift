@@ -69,7 +69,7 @@ final class NotificationScheduler: NSObject, UNUserNotificationCenterDelegate {
         return added
     }
 
-    /// Removes the already-delivered at-time (lead 0) banner for a prayer once its Prayer Mode
+    /// Removes the already-delivered at-time (lead 0) banner for a prayer once its Focus Mode
     /// card is shown, so the user doesn't see both.
     static func removeDeliveredAtTimeNotification(date: LocalDate, prayer: Prayer) {
         guard Bundle.main.bundleIdentifier != nil else { return }

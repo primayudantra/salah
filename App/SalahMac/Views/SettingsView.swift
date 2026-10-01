@@ -93,6 +93,9 @@ struct SettingsView: View {
                 SettingsRow(label: "Appearance") {
                     PillPicker(options: [(ThemeSetting.system, "System"), (.light, "Light"), (.dark, "Dark")], selection: binding(\.display.theme))
                 }
+                SettingsRow(label: "Accent color", hint: "The timeline panel and highlights.") {
+                    AccentThemePicker(selection: binding(\.display.accentTheme))
+                }
                 SettingsRow(label: "Launch at login", hint: model.loginItemMessage ?? "Keeps reminders topped up") {
                     toggle(\.launchAtLogin)
                 }

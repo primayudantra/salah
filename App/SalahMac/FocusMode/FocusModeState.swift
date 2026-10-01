@@ -1,10 +1,10 @@
 import Foundation
 import SalahCore
 
-/// Runtime state for Prayer Mode: which prayer was last handled, what's paused, whether Salah
+/// Runtime state for Focus Mode: which prayer was last handled, what's paused, whether Salah
 /// turned a Focus on, and a pending deferred card. Lives in `state.json`, next to `config.json` —
 /// never in the shared config, since the CLI has no business reading or writing it.
-struct PrayerModeState: Codable, Equatable {
+struct FocusModeState: Codable, Equatable {
     /// `<yyyy-MM-dd>.<prayer>` of the last prayer whose at-time actions already ran.
     var lastHandledID: String?
     /// Bundle IDs Salah paused and should resume on Done.
@@ -17,23 +17,23 @@ struct PrayerModeState: Codable, Equatable {
     var pendingPrayerID: String?
     var pendingNote: CardNote?
 
-    static let empty = PrayerModeState()
+    static let empty = FocusModeState()
 }
 
 /// Reads and atomically writes `state.json` beside the shared config.
-struct PrayerModeStateStore {
+struct FocusModeStateStore {
     let url: URL
 
     init(configURL: URL) {
         url = configURL.deletingLastPathComponent().appendingPathComponent("state.json")
     }
 
-    func load() -> PrayerModeState {
+    func load() -> FocusModeState {
         guard let data = try? Data(contentsOf: url) else { return .empty }
-        return (try? JSONDecoder().decode(PrayerModeState.self, from: data)) ?? .empty
+        return (try? JSONDecoder().decode(FocusModeState.self, from: data)) ?? .empty
     }
 
-    func save(_ state: PrayerModeState) {
+    func save(_ state: FocusModeState) {
         guard let data = try? JSONEncoder().encode(state) else { return }
         let dir = url.deletingLastPathComponent()
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -43,7 +43,7 @@ struct PrayerModeStateStore {
     }
 
     @discardableResult
-    func update(_ body: (inout PrayerModeState) -> Void) -> PrayerModeState {
+    func update(_ body: (inout FocusModeState) -> Void) -> FocusModeState {
         var s = load()
         body(&s)
         save(s)
@@ -51,5 +51,5 @@ struct PrayerModeStateStore {
     }
 }
 
-/// `<yyyy-MM-dd>.<prayer>`, the dedup key used throughout Prayer Mode.
+/// `<yyyy-MM-dd>.<prayer>`, the dedup key used throughout Focus Mode.
 func prayerHandledID(_ date: LocalDate, _ prayer: Prayer) -> String { "\(date).\(prayer.rawValue)" }

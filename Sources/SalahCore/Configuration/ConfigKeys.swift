@@ -77,6 +77,9 @@ public enum ConfigKeys {
             enumKey("display.theme", ThemeSetting.allCases.map(\.rawValue),
                     get: { $0.display.theme.rawValue },
                     set: { c, v in c.display.theme = ThemeSetting(rawValue: v)! }),
+            enumKey("display.accentTheme", AccentTheme.allCases.map(\.rawValue),
+                    get: { $0.display.accentTheme.rawValue },
+                    set: { c, v in c.display.accentTheme = AccentTheme(rawValue: v)! }),
             boolKey("display.jumuahRelabel", get: { $0.display.jumuahRelabel }, set: { $0.display.jumuahRelabel = $1 }),
             intKey("display.hijriAdjustment", -2...2, get: { $0.display.hijriAdjustment }, set: { $0.display.hijriAdjustment = $1 }),
             intKey("display.nowWindowMinutes", 0...60, get: { $0.display.nowWindowMinutes }, set: { $0.display.nowWindowMinutes = $1 }),
@@ -116,34 +119,34 @@ public enum ConfigKeys {
             ]
         }
         keys += [
-            boolKey("prayerMode.enabled", get: { $0.prayerMode.enabled }, set: { $0.prayerMode.enabled = $1 }),
+            boolKey("focusMode.enabled", get: { $0.focusMode.enabled }, set: { $0.focusMode.enabled = $1 }),
             ConfigKey(
-                key: "prayerMode.prayers", expected: "comma-separated: dhuhr,asr,maghrib,isha (fajr allowed too)",
-                getter: { c in Prayer.prayers.filter { c.prayerMode.prayers.contains($0) }.map(\.rawValue).joined(separator: ",") },
+                key: "focusMode.prayers", expected: "comma-separated: dhuhr,asr,maghrib,isha (fajr allowed too)",
+                getter: { c in Prayer.prayers.filter { c.focusMode.prayers.contains($0) }.map(\.rawValue).joined(separator: ",") },
                 setter: { c, v in
                     let names = v.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
                     var set = Set<Prayer>()
                     for n in names {
                         guard let p = Prayer(name: n), p.isPrayer else {
-                            throw ConfigKeyError.invalidValue(key: "prayerMode.prayers", value: v, expected: "comma-separated: dhuhr,asr,maghrib,isha (fajr allowed too)")
+                            throw ConfigKeyError.invalidValue(key: "focusMode.prayers", value: v, expected: "comma-separated: dhuhr,asr,maghrib,isha (fajr allowed too)")
                         }
                         set.insert(p)
                     }
-                    c.prayerMode.prayers = set
+                    c.focusMode.prayers = set
                 }
             ),
-            boolKey("prayerMode.card.enabled", get: { $0.prayerMode.card.enabled }, set: { $0.prayerMode.card.enabled = $1 }),
-            enumKey("prayerMode.card.autoCloseMinutes", PrayerModeCardSettings.allowedAutoCloseMinutes.map(String.init),
-                    get: { String($0.prayerMode.card.autoCloseMinutes) },
-                    set: { c, v in c.prayerMode.card.autoCloseMinutes = Int(v)! }),
-            boolKey("prayerMode.pauseMedia.enabled", get: { $0.prayerMode.pauseMedia.enabled }, set: { $0.prayerMode.pauseMedia.enabled = $1 }),
-            boolKey("prayerMode.pauseMedia.resumeOnDone", get: { $0.prayerMode.pauseMedia.resumeOnDone }, set: { $0.prayerMode.pauseMedia.resumeOnDone = $1 }),
-            boolKey("prayerMode.focus.enabled", get: { $0.prayerMode.focus.enabled }, set: { $0.prayerMode.focus.enabled = $1 }),
-            boolKey("prayerMode.focus.turnOffOnDone", get: { $0.prayerMode.focus.turnOffOnDone }, set: { $0.prayerMode.focus.turnOffOnDone = $1 }),
-            enumKey("prayerMode.whenBusy.onCall", CallBusyMode.allCases.map(\.rawValue),
-                    get: { $0.prayerMode.whenBusy.onCall.rawValue },
-                    set: { c, v in c.prayerMode.whenBusy.onCall = CallBusyMode(rawValue: v)! }),
-            boolKey("prayerMode.whenBusy.focusIsBusy", get: { $0.prayerMode.whenBusy.focusIsBusy }, set: { $0.prayerMode.whenBusy.focusIsBusy = $1 }),
+            boolKey("focusMode.card.enabled", get: { $0.focusMode.card.enabled }, set: { $0.focusMode.card.enabled = $1 }),
+            enumKey("focusMode.card.autoCloseMinutes", FocusModeCardSettings.allowedAutoCloseMinutes.map(String.init),
+                    get: { String($0.focusMode.card.autoCloseMinutes) },
+                    set: { c, v in c.focusMode.card.autoCloseMinutes = Int(v)! }),
+            boolKey("focusMode.pauseMedia.enabled", get: { $0.focusMode.pauseMedia.enabled }, set: { $0.focusMode.pauseMedia.enabled = $1 }),
+            boolKey("focusMode.pauseMedia.resumeOnDone", get: { $0.focusMode.pauseMedia.resumeOnDone }, set: { $0.focusMode.pauseMedia.resumeOnDone = $1 }),
+            boolKey("focusMode.focus.enabled", get: { $0.focusMode.focus.enabled }, set: { $0.focusMode.focus.enabled = $1 }),
+            boolKey("focusMode.focus.turnOffOnDone", get: { $0.focusMode.focus.turnOffOnDone }, set: { $0.focusMode.focus.turnOffOnDone = $1 }),
+            enumKey("focusMode.whenBusy.onCall", CallBusyMode.allCases.map(\.rawValue),
+                    get: { $0.focusMode.whenBusy.onCall.rawValue },
+                    set: { c, v in c.focusMode.whenBusy.onCall = CallBusyMode(rawValue: v)! }),
+            boolKey("focusMode.whenBusy.focusIsBusy", get: { $0.focusMode.whenBusy.focusIsBusy }, set: { $0.focusMode.whenBusy.focusIsBusy = $1 }),
         ]
         keys.append(boolKey("launchAtLogin", get: { $0.launchAtLogin }, set: { $0.launchAtLogin = $1 }))
         return keys

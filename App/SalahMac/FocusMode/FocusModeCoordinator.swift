@@ -4,26 +4,26 @@ import Foundation
 import OSLog
 import SalahCore
 
-private let log = Logger(subsystem: SalahInfo.appBundleIdentifier, category: "prayer-mode")
+private let log = Logger(subsystem: SalahInfo.appBundleIdentifier, category: "focus-mode")
 
-/// Orchestrates Prayer Mode: arms a timer for the next selected prayer, asks `PrayerModePlanner`
+/// Orchestrates Focus Mode: arms a timer for the next selected prayer, asks `FocusModePlanner`
 /// what to do, and executes that through the busy monitor, media and Focus controllers, and the
 /// card/nudge windows. The planner itself is pure and fully unit-tested; this class is the
-/// integration layer around it and is covered by manual testing (see roadmap/prayer-mode.md §13).
+/// integration layer around it and is covered by manual testing (see roadmap/focus-mode.md §13).
 @MainActor
-final class PrayerModeCoordinator {
+final class FocusModeCoordinator {
     /// A deferred card may only appear within this long after its prayer time.
     private static let prayerWindow: TimeInterval = 60 * 60
     private static let snoozeInterval: TimeInterval = 5 * 60
     private static let maxSnoozes = 3
     private static let focusPollInterval: TimeInterval = 30
 
-    private let stateStore: PrayerModeStateStore
+    private let stateStore: FocusModeStateStore
     private let busyMonitor: BusyMonitoring
     private let media: MediaControlling
     private let focus: FocusControlling
-    private let card: PrayerModeCardController
-    private let nudge: PrayerModeNudgeController
+    private let card: FocusModeCardController
+    private let nudge: FocusModeNudgeController
 
     private var fireTimer: Timer?
     private var focusPollTimer: Timer?
@@ -37,18 +37,18 @@ final class PrayerModeCoordinator {
 
     var configProvider: (() -> SalahConfig)!
     var nowProvider: () -> Date = Date.init
-    /// A one-line status for the Prayer Mode screen, e.g. a denied permission. `nil` clears it.
+    /// A one-line status for the Focus Mode screen, e.g. a denied permission. `nil` clears it.
     var onStatusMessage: ((String?) -> Void)?
 
     /// Default-argument expressions aren't actor-isolated even in an `@MainActor` init, so the
     /// adapters are constructed by the caller (always on the main actor) and passed in.
     init(configURL: URL, busyMonitor: BusyMonitoring, media: MediaControlling, focus: FocusControlling) {
-        self.stateStore = PrayerModeStateStore(configURL: configURL)
+        self.stateStore = FocusModeStateStore(configURL: configURL)
         self.busyMonitor = busyMonitor
         self.media = media
         self.focus = focus
-        self.card = PrayerModeCardController()
-        self.nudge = PrayerModeNudgeController()
+        self.card = FocusModeCardController()
+        self.nudge = FocusModeNudgeController()
         self.busyMonitor.onChange = { [weak self] state in MainActor.assumeIsolated { self?.busyDidChange(state) } }
         self.nudge.onSkip = { [weak self] in MainActor.assumeIsolated { self?.deferred = nil } }
         self.card.onDone = { [weak self] in MainActor.assumeIsolated { self?.handleDone() } }
@@ -92,8 +92,8 @@ final class PrayerModeCoordinator {
 
     private func arm() {
         fireTimer?.invalidate()
-        guard let config = configProvider?(), let location = config.location, location.isValid, config.prayerMode.enabled else { return }
-        guard let next = nextSelectedOccurrence(from: nowProvider(), location: location, settings: config.calculation, prayers: config.prayerMode.prayers) else { return }
+        guard let config = configProvider?(), let location = config.location, location.isValid, config.focusMode.enabled else { return }
+        guard let next = nextSelectedOccurrence(from: nowProvider(), location: location, settings: config.calculation, prayers: config.focusMode.prayers) else { return }
         let fireAt = next.time
         let interval = max(0.5, fireAt.timeIntervalSince(nowProvider()))
         let timer = Timer(timeInterval: interval, repeats: false) { [weak self] _ in
@@ -126,16 +126,16 @@ final class PrayerModeCoordinator {
         arm()
     }
 
-    private func evaluate(_ occurrence: (prayer: Prayer, date: LocalDate, time: Date), pendingNote: CardNote?) {
+    private func evaluate(_ occurrence: (prayer: Prayer, date: LocalDate, time: Date), pendingNote: CardNote?, idOverride: String? = nil) {
         guard let config = configProvider?() else { return }
         let state = stateStore.load()
-        let id = prayerHandledID(occurrence.date, occurrence.prayer)
-        let context = PrayerModeContext(
-            prayer: occurrence.prayer, prayerTime: occurrence.time, now: nowProvider(), settings: config.prayerMode,
-            busy: busy, isScreenLocked: Self.readScreenLocked(), alreadyHandled: state.lastHandledID == id,
+        let id = idOverride ?? prayerHandledID(occurrence.date, occurrence.prayer)
+        let context = FocusModeContext(
+            prayer: occurrence.prayer, prayerTime: occurrence.time, now: nowProvider(), settings: config.focusMode,
+            busy: busy, isScreenLocked: Self.readScreenLocked(), alreadyHandled: idOverride == nil && state.lastHandledID == id,
             salahOwnsFocus: state.salahTurnedFocusOn, pendingNote: pendingNote
         )
-        let actions = PrayerModePlanner.decide(context)
+        let actions = FocusModePlanner.decide(context)
         guard !actions.isEmpty else { return }
         execute(actions, occurrence: occurrence, id: id)
     }
@@ -205,13 +205,13 @@ final class PrayerModeCoordinator {
         if let note {
             pills.append(note == .callEnded ? "Your call just ended" : "Your Focus just turned off")
         }
-        if config.prayerMode.pauseMedia.enabled { pills.append("Music paused") }
-        if config.prayerMode.focus.enabled { pills.append("Focus on") }
+        if config.focusMode.pauseMedia.enabled { pills.append("Music paused") }
+        if config.focusMode.focus.enabled { pills.append("Focus on") }
 
         showing = occurrence
         card.show(
             prayerName: label, timeText: timeText, locationName: locationName, pills: pills,
-            autoCloseMinutes: config.prayerMode.card.autoCloseMinutes, reduceMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+            autoCloseMinutes: config.focusMode.card.autoCloseMinutes, reduceMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         )
         NotificationScheduler.removeDeliveredAtTimeNotification(date: occurrence.date, prayer: occurrence.prayer)
         scheduleAutoClose(occurrence)
@@ -260,7 +260,7 @@ final class PrayerModeCoordinator {
             return
         }
         guard let config = configProvider?() else { return }
-        let pm = config.prayerMode
+        let pm = config.focusMode
         close(occurrence, resume: pm.pauseMedia.enabled && pm.pauseMedia.resumeOnDone, focusOff: pm.focus.enabled && pm.focus.turnOffOnDone)
         stateStore.update { $0.snoozeCount = 0 }
     }
@@ -290,12 +290,12 @@ final class PrayerModeCoordinator {
     }
 
     private func scheduleAutoClose(_ occurrence: (prayer: Prayer, date: LocalDate, time: Date)) {
-        guard let minutes = configProvider?().prayerMode.card.autoCloseMinutes else { return }
+        guard let minutes = configProvider?().focusMode.card.autoCloseMinutes else { return }
         let deadline = occurrence.time.addingTimeInterval(TimeInterval(minutes * 60))
         let interval = max(1, deadline.timeIntervalSince(nowProvider()))
         DispatchQueue.main.asyncAfter(deadline: .now() + interval) { [weak self] in
             guard let self, self.showing?.prayer == occurrence.prayer, self.showing?.date == occurrence.date else { return }
-            self.close(occurrence, resume: false, focusOff: self.configProvider?().prayerMode.focus.enabled ?? false)
+            self.close(occurrence, resume: false, focusOff: self.configProvider?().focusMode.focus.enabled ?? false)
         }
     }
 
@@ -313,6 +313,19 @@ final class PrayerModeCoordinator {
             Task { _ = await focus.turnOff() }
             stateStore.update { $0.salahTurnedFocusOn = false }
         }
+    }
+
+    // MARK: - Real test run (actually pauses media / turns on Focus — unlike the previews below)
+
+    /// Runs the real action pipeline right now, as if "Asr" were happening this second, honouring
+    /// current settings and busy state. Unlike a preview, this really pauses Spotify/Apple Music
+    /// and turns a Focus on — so you can check that part works without waiting for a real prayer.
+    /// Uses a `test.` id that never collides with real prayer dedup, so it doesn't disturb the
+    /// schedule, and does not arm or disarm the real prayer timer.
+    func runRealTestNow() {
+        let now = nowProvider()
+        let testOccurrence = (prayer: Prayer.asr, date: LocalDate(now, in: configProvider?().location?.tz ?? .current), time: now)
+        evaluate(testOccurrence, pendingNote: nil, idOverride: "test.\(UUID().uuidString)")
     }
 
     // MARK: - Previews (never pause media, change Focus, or mark a prayer handled)
@@ -413,14 +426,14 @@ final class PrayerModeCoordinator {
         let tz = config.location?.tz ?? .current
         card.rebuildForScreenChange(
             prayerName: label, timeText: TimeFormatting.clock(occurrence.time, in: tz, use24Hour: display.use24HourClock),
-            locationName: config.location?.name ?? "", pills: [], autoCloseMinutes: config.prayerMode.card.autoCloseMinutes,
+            locationName: config.location?.name ?? "", pills: [], autoCloseMinutes: config.focusMode.card.autoCloseMinutes,
             reduceMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         )
     }
 
     private func updateStatusMessage() {
-        guard let config = configProvider?(), config.prayerMode.enabled else { onStatusMessage?(nil); return }
-        if config.prayerMode.focus.enabled {
+        guard let config = configProvider?(), config.focusMode.enabled else { onStatusMessage?(nil); return }
+        if config.focusMode.focus.enabled {
             Task {
                 let installed = await focus.shortcutsInstalled()
                 if !installed { self.onStatusMessage?("Salah Focus shortcuts not found. Add Shortcuts…") }

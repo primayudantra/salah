@@ -15,7 +15,7 @@ public enum CallBusyMode: String, Codable, CaseIterable, Sendable {
     }
 }
 
-public struct PrayerModeCardSettings: Codable, Equatable, Sendable {
+public struct FocusModeCardSettings: Codable, Equatable, Sendable {
     public static let allowedAutoCloseMinutes = [10, 15, 30]
 
     public var enabled: Bool
@@ -34,7 +34,7 @@ public struct PrayerModeCardSettings: Codable, Equatable, Sendable {
     }
 }
 
-public struct PrayerModePauseMediaSettings: Codable, Equatable, Sendable {
+public struct FocusModePauseMediaSettings: Codable, Equatable, Sendable {
     public var enabled: Bool
     public var resumeOnDone: Bool
 
@@ -50,7 +50,7 @@ public struct PrayerModePauseMediaSettings: Codable, Equatable, Sendable {
     }
 }
 
-public struct PrayerModeFocusSettings: Codable, Equatable, Sendable {
+public struct MacFocusSettings: Codable, Equatable, Sendable {
     public var enabled: Bool
     public var turnOffOnDone: Bool
 
@@ -66,7 +66,7 @@ public struct PrayerModeFocusSettings: Codable, Equatable, Sendable {
     }
 }
 
-public struct PrayerModeBusySettings: Codable, Equatable, Sendable {
+public struct FocusModeBusySettings: Codable, Equatable, Sendable {
     public var onCall: CallBusyMode
     public var focusIsBusy: Bool
 
@@ -82,23 +82,23 @@ public struct PrayerModeBusySettings: Codable, Equatable, Sendable {
     }
 }
 
-/// "Prayer Mode": a calm full-screen card, pausing music and turning on a Focus at prayer time,
+/// "Focus Mode": a calm full-screen card, pausing music and turning on a Focus at prayer time,
 /// skipped (with a small nudge instead) when the user is busy. Off by default.
-public struct PrayerModeSettings: Codable, Equatable, Sendable {
+public struct FocusModeSettings: Codable, Equatable, Sendable {
     public static let defaultPrayers: Set<Prayer> = [.dhuhr, .asr, .maghrib, .isha]
 
     public var enabled: Bool
     /// Which of the five prayers this applies to. Never contains `.sunrise`.
     public var prayers: Set<Prayer>
-    public var card: PrayerModeCardSettings
-    public var pauseMedia: PrayerModePauseMediaSettings
-    public var focus: PrayerModeFocusSettings
-    public var whenBusy: PrayerModeBusySettings
+    public var card: FocusModeCardSettings
+    public var pauseMedia: FocusModePauseMediaSettings
+    public var focus: MacFocusSettings
+    public var whenBusy: FocusModeBusySettings
 
     public init(
-        enabled: Bool = false, prayers: Set<Prayer> = PrayerModeSettings.defaultPrayers,
-        card: PrayerModeCardSettings = PrayerModeCardSettings(), pauseMedia: PrayerModePauseMediaSettings = PrayerModePauseMediaSettings(),
-        focus: PrayerModeFocusSettings = PrayerModeFocusSettings(), whenBusy: PrayerModeBusySettings = PrayerModeBusySettings()
+        enabled: Bool = false, prayers: Set<Prayer> = FocusModeSettings.defaultPrayers,
+        card: FocusModeCardSettings = FocusModeCardSettings(), pauseMedia: FocusModePauseMediaSettings = FocusModePauseMediaSettings(),
+        focus: MacFocusSettings = MacFocusSettings(), whenBusy: FocusModeBusySettings = FocusModeBusySettings()
     ) {
         self.enabled = enabled
         self.prayers = prayers
@@ -116,10 +116,10 @@ public struct PrayerModeSettings: Codable, Equatable, Sendable {
         } else {
             prayers = Self.defaultPrayers
         }
-        card = try c.decodeIfPresent(PrayerModeCardSettings.self, forKey: .card) ?? PrayerModeCardSettings()
-        pauseMedia = try c.decodeIfPresent(PrayerModePauseMediaSettings.self, forKey: .pauseMedia) ?? PrayerModePauseMediaSettings()
-        focus = try c.decodeIfPresent(PrayerModeFocusSettings.self, forKey: .focus) ?? PrayerModeFocusSettings()
-        whenBusy = try c.decodeIfPresent(PrayerModeBusySettings.self, forKey: .whenBusy) ?? PrayerModeBusySettings()
+        card = try c.decodeIfPresent(FocusModeCardSettings.self, forKey: .card) ?? FocusModeCardSettings()
+        pauseMedia = try c.decodeIfPresent(FocusModePauseMediaSettings.self, forKey: .pauseMedia) ?? FocusModePauseMediaSettings()
+        focus = try c.decodeIfPresent(MacFocusSettings.self, forKey: .focus) ?? MacFocusSettings()
+        whenBusy = try c.decodeIfPresent(FocusModeBusySettings.self, forKey: .whenBusy) ?? FocusModeBusySettings()
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -134,6 +134,6 @@ public struct PrayerModeSettings: Codable, Equatable, Sendable {
 
     enum CodingKeys: String, CodingKey { case enabled, prayers, card, pauseMedia, focus, whenBusy }
 
-    /// Whether any of the three actions is turned on. If none are, Prayer Mode has nothing to do.
+    /// Whether any of the three actions is turned on. If none are, Focus Mode has nothing to do.
     public var hasAnyAction: Bool { card.enabled || pauseMedia.enabled || focus.enabled }
 }

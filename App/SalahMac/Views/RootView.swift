@@ -14,7 +14,7 @@ struct RootView: View {
                 case .today: TodayView(ticker: model.ticker)
                 case .schedule: ScheduleView()
                 case .reminders: RemindersView()
-                case .prayerMode: PrayerModeView()
+                case .focusMode: FocusModeView()
                 case .settings: SettingsView()
                 case .about: AboutView()
                 }

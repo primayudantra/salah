@@ -2,35 +2,35 @@ import ArgumentParser
 import Foundation
 import SalahCore
 
-struct PrayerModeCommand: AsyncParsableCommand {
+struct FocusModeCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "prayer-mode",
-        abstract: "Show or change Prayer Mode: a full-screen card, pausing music and a Focus at prayer time.",
-        discussion: "Salah.app runs Prayer Mode; the CLI only edits its settings.",
+        commandName: "focus-mode",
+        abstract: "Show or change Focus Mode: a full-screen card, pausing music and a Focus at prayer time.",
+        discussion: "Salah.app runs Focus Mode; the CLI only edits its settings.",
         subcommands: [On.self, Off.self, Status.self],
         defaultSubcommand: Status.self
     )
 
     struct On: AsyncParsableCommand {
-        static let configuration = CommandConfiguration(abstract: "Turn Prayer Mode on.")
+        static let configuration = CommandConfiguration(abstract: "Turn Focus Mode on.")
 
         func run() async throws {
-            try CLIContext.store.update { $0.prayerMode.enabled = true }
-            print(PrayerModeCommand.savedMessage("Prayer Mode on.", appRunning: CLIContext.appIsRunning))
+            try CLIContext.store.update { $0.focusMode.enabled = true }
+            print(FocusModeCommand.savedMessage("Focus Mode on.", appRunning: CLIContext.appIsRunning))
         }
     }
 
     struct Off: AsyncParsableCommand {
-        static let configuration = CommandConfiguration(abstract: "Turn Prayer Mode off.")
+        static let configuration = CommandConfiguration(abstract: "Turn Focus Mode off.")
 
         func run() async throws {
-            try CLIContext.store.update { $0.prayerMode.enabled = false }
-            print(PrayerModeCommand.savedMessage("Prayer Mode off.", appRunning: CLIContext.appIsRunning))
+            try CLIContext.store.update { $0.focusMode.enabled = false }
+            print(FocusModeCommand.savedMessage("Focus Mode off.", appRunning: CLIContext.appIsRunning))
         }
     }
 
     struct Status: AsyncParsableCommand {
-        static let configuration = CommandConfiguration(abstract: "Show Prayer Mode settings.")
+        static let configuration = CommandConfiguration(abstract: "Show Focus Mode settings.")
 
         @OptionGroup var output: OutputOptions
 
@@ -42,15 +42,15 @@ struct PrayerModeCommand: AsyncParsableCommand {
         struct JSONStatus: Encodable {
             let enabled: Bool
             let prayers: [String]
-            let card: PrayerModeCardSettings
-            let pauseMedia: PrayerModePauseMediaSettings
-            let focus: PrayerModeFocusSettings
-            let whenBusy: PrayerModeBusySettings
+            let card: FocusModeCardSettings
+            let pauseMedia: FocusModePauseMediaSettings
+            let focus: MacFocusSettings
+            let whenBusy: FocusModeBusySettings
             let appRunning: Bool
         }
 
         static func render(config: SalahConfig, appRunning: Bool, output: OutputOptions) throws -> String {
-            let pm = config.prayerMode
+            let pm = config.focusMode
             let prayerNames = Prayer.prayers.filter { pm.prayers.contains($0) }.map(\.name)
 
             switch output.mode {
@@ -61,12 +61,12 @@ struct PrayerModeCommand: AsyncParsableCommand {
                 ))
             case .compact:
                 let state = !pm.enabled ? "off" : "on"
-                return "prayer-mode \(state) · \(prayerNames.joined(separator: ",")) · app \(appRunning ? "running" : "not running")\n"
+                return "focus-mode \(state) · \(prayerNames.joined(separator: ",")) · app \(appRunning ? "running" : "not running")\n"
             case .pretty, .plain:
                 let stateText = pm.enabled ? "ON" : "OFF"
                 let head: [Line] = [
-                    [.bold("PRAYER MODE  "), pm.enabled ? .accent(stateText) : .dim(stateText)],
-                    [.dim(appRunning ? "Salah.app is running" : "Salah.app is not running — Prayer Mode only runs while the app is open")],
+                    [.bold("FOCUS MODE  "), pm.enabled ? .accent(stateText) : .dim(stateText)],
+                    [.dim(appRunning ? "Salah.app is running" : "Salah.app is not running — Focus Mode only runs while the app is open")],
                 ]
                 var actions: [Line] = [
                     [.normal("Full-screen card  "), pm.card.enabled ? .normal("on, closes after \(pm.card.autoCloseMinutes) min") : .dim("off")],
@@ -87,6 +87,6 @@ struct PrayerModeCommand: AsyncParsableCommand {
     static func savedMessage(_ what: String, appRunning: Bool) -> String {
         appRunning
             ? "Saved. \(what) Salah.app is running and will pick up the change."
-            : "Saved. \(what) Prayer Mode takes effect when Salah.app is running."
+            : "Saved. \(what) Focus Mode takes effect when Salah.app is running."
     }
 }

@@ -2,7 +2,7 @@ import Foundation
 import OSLog
 import SalahCore
 
-private let log = Logger(subsystem: SalahInfo.appBundleIdentifier, category: "prayer-mode.focus-shortcuts")
+private let log = Logger(subsystem: SalahInfo.appBundleIdentifier, category: "focus-mode.focus-shortcuts")
 
 /// Turns a user-defined Focus on and off by running their "Salah Focus On" / "Salah Focus Off"
 /// Shortcuts. Salah never picks the Focus itself — the user wires that up once inside Shortcuts.

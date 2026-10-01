@@ -10,9 +10,9 @@ private let log = Logger(subsystem: SalahInfo.appBundleIdentifier, category: "ap
 @MainActor
 final class AppModel: ObservableObject {
     enum Tab: String, CaseIterable, Identifiable {
-        case today, schedule, reminders, prayerMode, settings, about
+        case today, schedule, reminders, focusMode, settings, about
         var id: String { rawValue }
-        var title: String { self == .prayerMode ? "Prayer Mode" : rawValue.capitalized }
+        var title: String { self == .focusMode ? "Focus Mode" : rawValue.capitalized }
     }
 
     @Published var tab: Tab = .today
@@ -27,14 +27,14 @@ final class AppModel: ObservableObject {
     @Published private(set) var notificationAuth: NotificationScheduler.Authorization = .notDetermined
     @Published private(set) var scheduled: [PlannedNotification] = []
     @Published private(set) var loginItemMessage: String?
-    @Published private(set) var prayerModeStatusMessage: String?
+    @Published private(set) var focusModeStatusMessage: String?
 
     let store = ConfigStore()
     let ticker = Ticker()
     let scheduler = NotificationScheduler()
     let locationProvider = LocationProvider()
     let updater = Updater()
-    let prayerModeCoordinator: PrayerModeCoordinator
+    let focusModeCoordinator: FocusModeCoordinator
 
     private var watcher: ConfigWatcher?
     private var observers: [NSObjectProtocol] = []
@@ -42,7 +42,7 @@ final class AppModel: ObservableObject {
     private var plannedDay: LocalDate?
 
     init() {
-        prayerModeCoordinator = PrayerModeCoordinator(
+        focusModeCoordinator = FocusModeCoordinator(
             configURL: store.url, busyMonitor: SystemBusyMonitor(),
             media: AppleScriptMediaController(), focus: ShortcutsFocusController()
         )
@@ -57,16 +57,17 @@ final class AppModel: ObservableObject {
         ticker.onTick = { [weak self] now in self?.checkRollover(now) }
         observeSystem()
         applyAppearance()
+        applyAccentTheme()
         applyLaunchAtLogin()
         updater.start()
-        prayerModeCoordinator.configProvider = { [weak self] in self?.config ?? .default }
-        prayerModeCoordinator.onStatusMessage = { [weak self] message in
-            MainActor.assumeIsolated { self?.prayerModeStatusMessage = message }
+        focusModeCoordinator.configProvider = { [weak self] in self?.config ?? .default }
+        focusModeCoordinator.onStatusMessage = { [weak self] message in
+            MainActor.assumeIsolated { self?.focusModeStatusMessage = message }
         }
         AppDelegate.onWillTerminate = { [weak self] in
-            MainActor.assumeIsolated { self?.prayerModeCoordinator.prepareForQuit() }
+            MainActor.assumeIsolated { self?.focusModeCoordinator.prepareForQuit() }
         }
-        prayerModeCoordinator.start()
+        focusModeCoordinator.start()
         Task {
             if config.reminders.enabled, config.location != nil, await scheduler.authorization() == .notDetermined {
                 await scheduler.requestAuthorization()
@@ -150,16 +151,17 @@ final class AppModel: ObservableObject {
 
     private func didChange(from old: SalahConfig) {
         if old.display.theme != config.display.theme { applyAppearance() }
+        if old.display.accentTheme != config.display.accentTheme { applyAccentTheme() }
         if old.display.showMenuBarExtra != config.display.showMenuBarExtra { applyDockPolicy() }
         if old.launchAtLogin != config.launchAtLogin { applyLaunchAtLogin() }
         if old.reminders.enabled != config.reminders.enabled, config.reminders.enabled {
             Task { await ensureAuthorization() }
         }
         replan()
-        prayerModeCoordinator.refresh()
+        focusModeCoordinator.refresh()
     }
 
-    // MARK: - Prayer Mode permissions
+    // MARK: - Focus Mode permissions
 
     /// Requests Focus Status authorization the first time "Treat as busy" is turned on.
     /// Shows a status message if it's denied; the setting itself still saves either way.
@@ -167,44 +169,44 @@ final class AppModel: ObservableObject {
         let status = FocusStatusMonitor.authorizationStatus()
         guard status == .notDetermined else {
             if status == .denied || status == .restricted {
-                prayerModeStatusMessage = "Focus status permission needed. Open System Settings › Privacy & Security."
+                focusModeStatusMessage = "Focus status permission needed. Open System Settings › Privacy & Security."
             }
             return
         }
         let result = await FocusStatusMonitor.requestAuthorization()
         if result == .denied || result == .restricted {
-            prayerModeStatusMessage = "Focus status permission needed. Open System Settings › Privacy & Security."
+            focusModeStatusMessage = "Focus status permission needed. Open System Settings › Privacy & Security."
         }
     }
 
-    // MARK: - Prayer Mode previews
+    // MARK: - Focus Mode previews
 
-    enum PrayerModePreviewKind { case card, call, focus }
+    enum FocusModePreviewKind { case card, call, focus }
 
     /// Shows the real card or nudge windows with fabricated content. Never pauses music,
     /// changes a Focus, or marks any prayer as handled.
-    func previewPrayerMode(_ kind: PrayerModePreviewKind) {
+    func previewFocusMode(_ kind: FocusModePreviewKind) {
         guard let next = clockState(at: Date())?.next ?? clockState(at: Date().addingTimeInterval(1))?.next else { return }
         let label = next.label(jumuahRelabel: display.jumuahRelabel)
         let timeText = clock(next.time)
         switch kind {
         case .card:
             var pills: [String] = []
-            if config.prayerMode.pauseMedia.enabled { pills.append("Music paused") }
-            if config.prayerMode.focus.enabled { pills.append("Focus on") }
-            prayerModeCoordinator.previewCard(
+            if config.focusMode.pauseMedia.enabled { pills.append("Music paused") }
+            if config.focusMode.focus.enabled { pills.append("Focus on") }
+            focusModeCoordinator.previewCard(
                 prayerName: label, timeText: timeText, locationName: location?.name ?? "",
-                pills: pills, autoCloseMinutes: config.prayerMode.card.autoCloseMinutes
+                pills: pills, autoCloseMinutes: config.focusMode.card.autoCloseMinutes
             )
         case .call:
-            prayerModeCoordinator.previewNudge(
+            focusModeCoordinator.previewNudge(
                 reason: .call(appName: "Zoom"), prayerTimeLine: "\(label) · \(timeText)",
-                cardLater: config.prayerMode.card.enabled && config.prayerMode.whenBusy.onCall == .nudgeThenCard
+                cardLater: config.focusMode.card.enabled && config.focusMode.whenBusy.onCall == .nudgeThenCard
             )
         case .focus:
-            prayerModeCoordinator.previewNudge(
+            focusModeCoordinator.previewNudge(
                 reason: .focus, prayerTimeLine: "\(label) · \(timeText)",
-                cardLater: config.prayerMode.card.enabled && config.prayerMode.whenBusy.onCall == .nudgeThenCard
+                cardLater: config.focusMode.card.enabled && config.focusMode.whenBusy.onCall == .nudgeThenCard
             )
         }
     }
@@ -366,6 +368,10 @@ final class AppModel: ObservableObject {
         case .light: NSApp?.appearance = NSAppearance(named: .aqua)
         case .dark: NSApp?.appearance = NSAppearance(named: .darkAqua)
         }
+    }
+
+    private func applyAccentTheme() {
+        Palette.current = config.display.accentTheme
     }
 
     private func applyLaunchAtLogin() {

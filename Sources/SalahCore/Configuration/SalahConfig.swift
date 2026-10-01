@@ -4,6 +4,21 @@ public enum ThemeSetting: String, CaseIterable, Codable, Sendable {
     case system, light, dark
 }
 
+/// The app's accent color family — the timeline panel, buttons and highlights. Red is the
+/// original design; the others are alternates offered in Settings.
+public enum AccentTheme: String, CaseIterable, Codable, Sendable {
+    case red, sage, blue, olive
+
+    public var displayName: String {
+        switch self {
+        case .red: return "Red"
+        case .sage: return "Sage"
+        case .blue: return "Blue"
+        case .olive: return "Olive"
+        }
+    }
+}
+
 public enum MenuBarStyle: String, CaseIterable, Codable, Sendable {
     /// "☾ Asr · 12m"
     case nameAndCountdown
@@ -23,6 +38,7 @@ public enum MenuBarStyle: String, CaseIterable, Codable, Sendable {
 public struct DisplaySettings: Codable, Equatable, Sendable {
     public var use24HourClock: Bool
     public var theme: ThemeSetting
+    public var accentTheme: AccentTheme
     public var jumuahRelabel: Bool
     /// Manual Hijri adjustment for local moon sighting, clamped to -2...2.
     public var hijriAdjustment: Int
@@ -32,12 +48,13 @@ public struct DisplaySettings: Codable, Equatable, Sendable {
     public var menuBarStyle: MenuBarStyle
 
     public init(
-        use24HourClock: Bool = true, theme: ThemeSetting = .system, jumuahRelabel: Bool = true,
-        hijriAdjustment: Int = 0, nowWindowMinutes: Int = 15, showMenuBarExtra: Bool = true,
-        menuBarStyle: MenuBarStyle = .nameAndCountdown
+        use24HourClock: Bool = true, theme: ThemeSetting = .system, accentTheme: AccentTheme = .red,
+        jumuahRelabel: Bool = true, hijriAdjustment: Int = 0, nowWindowMinutes: Int = 15,
+        showMenuBarExtra: Bool = true, menuBarStyle: MenuBarStyle = .nameAndCountdown
     ) {
         self.use24HourClock = use24HourClock
         self.theme = theme
+        self.accentTheme = accentTheme
         self.jumuahRelabel = jumuahRelabel
         self.hijriAdjustment = hijriAdjustment
         self.nowWindowMinutes = nowWindowMinutes
@@ -50,6 +67,7 @@ public struct DisplaySettings: Codable, Equatable, Sendable {
         let d = DisplaySettings()
         use24HourClock = try c.decodeIfPresent(Bool.self, forKey: .use24HourClock) ?? d.use24HourClock
         theme = try c.decodeLenient(ThemeSetting.self, forKey: .theme) ?? d.theme
+        accentTheme = try c.decodeLenient(AccentTheme.self, forKey: .accentTheme) ?? d.accentTheme
         jumuahRelabel = try c.decodeIfPresent(Bool.self, forKey: .jumuahRelabel) ?? d.jumuahRelabel
         hijriAdjustment = min(2, max(-2, try c.decodeIfPresent(Int.self, forKey: .hijriAdjustment) ?? 0))
         nowWindowMinutes = min(60, max(0, try c.decodeIfPresent(Int.self, forKey: .nowWindowMinutes) ?? d.nowWindowMinutes))
@@ -203,20 +221,20 @@ public struct SalahConfig: Codable, Equatable, Sendable {
     public var calculation: CalculationSettings
     public var display: DisplaySettings
     public var reminders: ReminderSettings
-    public var prayerMode: PrayerModeSettings
+    public var focusMode: FocusModeSettings
     public var launchAtLogin: Bool
 
     public init(
         location: SavedLocation? = nil, calculation: CalculationSettings = CalculationSettings(),
         display: DisplaySettings = DisplaySettings(), reminders: ReminderSettings = ReminderSettings(),
-        prayerMode: PrayerModeSettings = PrayerModeSettings(), launchAtLogin: Bool = true
+        focusMode: FocusModeSettings = FocusModeSettings(), launchAtLogin: Bool = true
     ) {
         self.schemaVersion = Self.currentSchemaVersion
         self.location = location
         self.calculation = calculation
         self.display = display
         self.reminders = reminders
-        self.prayerMode = prayerMode
+        self.focusMode = focusMode
         self.launchAtLogin = launchAtLogin
     }
 
@@ -227,7 +245,7 @@ public struct SalahConfig: Codable, Equatable, Sendable {
         calculation = try c.decodeIfPresent(CalculationSettings.self, forKey: .calculation) ?? CalculationSettings()
         display = try c.decodeIfPresent(DisplaySettings.self, forKey: .display) ?? DisplaySettings()
         reminders = try c.decodeIfPresent(ReminderSettings.self, forKey: .reminders) ?? ReminderSettings()
-        prayerMode = try c.decodeIfPresent(PrayerModeSettings.self, forKey: .prayerMode) ?? PrayerModeSettings()
+        focusMode = try c.decodeIfPresent(FocusModeSettings.self, forKey: .focusMode) ?? FocusModeSettings()
         launchAtLogin = try c.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? true
     }
 

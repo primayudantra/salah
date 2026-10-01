@@ -1,10 +1,10 @@
 import SalahCore
 import SwiftUI
 
-struct PrayerModeView: View {
+struct FocusModeView: View {
     @EnvironmentObject private var model: AppModel
 
-    private var pm: PrayerModeSettings { model.config.prayerMode }
+    private var pm: FocusModeSettings { model.config.focusMode }
 
     var body: some View {
         MaybeScroll {
@@ -22,11 +22,12 @@ struct PrayerModeView: View {
                     section("Prayers")
                     prayersGroup
                     previewRow
+                    testRow
                 }
                 .opacity(pm.enabled ? 1 : 0.45)
                 .disabled(!pm.enabled)
 
-                if let message = model.prayerModeStatusMessage {
+                if let message = model.focusModeStatusMessage {
                     Text(message)
                         .font(.system(size: 13))
                         .foregroundStyle(Palette.accent)
@@ -45,11 +46,11 @@ struct PrayerModeView: View {
     private var hero: some View {
         HStack(alignment: .top, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Prayer Mode").font(.system(size: 20, weight: .semibold))
+                Text("Focus Mode").font(.system(size: 20, weight: .semibold))
                 Text(heroSubtitle).foregroundStyle(Palette.secondary).fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
-            Toggle("", isOn: binding(\.prayerMode.enabled)).toggleStyle(.switch).labelsHidden().tint(Palette.accent).controlSize(.large)
+            Toggle("", isOn: binding(\.focusMode.enabled)).toggleStyle(.switch).labelsHidden().tint(Palette.accent).controlSize(.large)
         }
     }
 
@@ -71,26 +72,26 @@ struct PrayerModeView: View {
     private var atPrayerTimeGroup: some View {
         SettingsGroup {
             SettingsRow(label: "Show a full-screen card", hint: "A calm screen with the prayer name. Done or Esc always closes it.") {
-                Toggle("", isOn: binding(\.prayerMode.card.enabled)).toggleStyle(.switch).labelsHidden().tint(Palette.accent)
+                Toggle("", isOn: binding(\.focusMode.card.enabled)).toggleStyle(.switch).labelsHidden().tint(Palette.accent)
             }
             if pm.card.enabled {
                 SettingsRow(label: "Close by itself after") {
-                    Picker("", selection: binding(\.prayerMode.card.autoCloseMinutes)) {
-                        ForEach(PrayerModeCardSettings.allowedAutoCloseMinutes, id: \.self) { Text("\($0) min").tag($0) }
+                    Picker("", selection: binding(\.focusMode.card.autoCloseMinutes)) {
+                        ForEach(FocusModeCardSettings.allowedAutoCloseMinutes, id: \.self) { Text("\($0) min").tag($0) }
                     }
                     .labelsHidden().fixedSize()
                 }
             }
             SettingsRow(label: "Pause music", hint: "Apple Music and Spotify. macOS asks permission once per app.") {
-                Toggle("", isOn: binding(\.prayerMode.pauseMedia.enabled)).toggleStyle(.switch).labelsHidden().tint(Palette.accent)
+                Toggle("", isOn: binding(\.focusMode.pauseMedia.enabled)).toggleStyle(.switch).labelsHidden().tint(Palette.accent)
             }
             if pm.pauseMedia.enabled {
                 SettingsRow(label: "Resume when I tap Done") {
-                    Toggle("", isOn: binding(\.prayerMode.pauseMedia.resumeOnDone)).toggleStyle(.switch).labelsHidden().tint(Palette.accent)
+                    Toggle("", isOn: binding(\.focusMode.pauseMedia.resumeOnDone)).toggleStyle(.switch).labelsHidden().tint(Palette.accent)
                 }
             }
             SettingsRow(label: "Turn on a Focus", hint: focusHint) {
-                Toggle("", isOn: binding(\.prayerMode.focus.enabled)).toggleStyle(.switch).labelsHidden().tint(Palette.accent)
+                Toggle("", isOn: binding(\.focusMode.focus.enabled)).toggleStyle(.switch).labelsHidden().tint(Palette.accent)
             }
         }
     }
@@ -102,7 +103,7 @@ struct PrayerModeView: View {
     private var whenBusyGroup: some View {
         SettingsGroup {
             SettingsRow(label: "On a call", hint: "Zoom, Teams, Slack huddles, Google Meet: anything using your mic or camera.") {
-                Picker("", selection: binding(\.prayerMode.whenBusy.onCall)) {
+                Picker("", selection: binding(\.focusMode.whenBusy.onCall)) {
                     ForEach(CallBusyMode.allCases, id: \.self) { Text($0.displayName).tag($0) }
                 }
                 .labelsHidden().fixedSize()
@@ -111,7 +112,7 @@ struct PrayerModeView: View {
                 Picker("", selection: Binding(
                     get: { pm.whenBusy.focusIsBusy },
                     set: { v in
-                        model.update { $0.prayerMode.whenBusy.focusIsBusy = v }
+                        model.update { $0.focusMode.whenBusy.focusIsBusy = v }
                         if v { Task { await model.requestFocusStatusIfNeeded() } }
                     }
                 )) {
@@ -144,7 +145,7 @@ struct PrayerModeView: View {
 
     private func togglePrayer(_ p: Prayer) {
         model.update { c in
-            if c.prayerMode.prayers.contains(p) { c.prayerMode.prayers.remove(p) } else { c.prayerMode.prayers.insert(p) }
+            if c.focusMode.prayers.contains(p) { c.focusMode.prayers.remove(p) } else { c.focusMode.prayers.insert(p) }
         }
     }
 
@@ -152,13 +153,26 @@ struct PrayerModeView: View {
 
     private var previewRow: some View {
         HStack {
-            Button("Preview with Focus on") { model.previewPrayerMode(.focus) }
+            Button("Preview with Focus on") { model.previewFocusMode(.focus) }
             Spacer()
-            Button("Preview on a call") { model.previewPrayerMode(.call) }
-            Button("Preview at Asr") { model.previewPrayerMode(.card) }
+            Button("Preview on a call") { model.previewFocusMode(.call) }
+            Button("Preview at Asr") { model.previewFocusMode(.card) }
                 .buttonStyle(AccentButtonStyle())
         }
         .padding(.top, 4)
+    }
+
+    /// Preview buttons above never touch real music or Focus. This does — it runs the real
+    /// pipeline once, right now, so you can check Spotify/Apple Music and your Focus actually
+    /// respond, without waiting for a real prayer.
+    private var testRow: some View {
+        HStack {
+            Text("Start Spotify or Music playing, then:")
+                .font(.system(size: 12)).foregroundStyle(Palette.secondary)
+            Spacer()
+            Button("Run for real, once") { model.focusModeCoordinator.runRealTestNow() }
+        }
+        .padding(.top, 10)
     }
 
     // MARK: - Helpers

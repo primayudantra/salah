@@ -3,7 +3,7 @@ import Foundation
 import OSLog
 import SalahCore
 
-private let log = Logger(subsystem: SalahInfo.appBundleIdentifier, category: "prayer-mode.media")
+private let log = Logger(subsystem: SalahInfo.appBundleIdentifier, category: "focus-mode.media")
 
 struct MediaApp: Equatable, Hashable, Sendable {
     let bundleID: String

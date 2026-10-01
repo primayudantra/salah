@@ -30,11 +30,11 @@ public enum PlannedAction: Equatable, Sendable {
 }
 
 /// Everything the planner needs to decide what happens for one prayer, at one instant.
-public struct PrayerModeContext: Equatable, Sendable {
+public struct FocusModeContext: Equatable, Sendable {
     public let prayer: Prayer
     public let prayerTime: Date
     public let now: Date
-    public let settings: PrayerModeSettings
+    public let settings: FocusModeSettings
     public let busy: BusyState
     public let isScreenLocked: Bool
     /// Already ran the at-time actions for this prayer (dedup key `<date>.<prayer>`).
@@ -45,7 +45,7 @@ public struct PrayerModeContext: Equatable, Sendable {
     public let pendingNote: CardNote?
 
     public init(
-        prayer: Prayer, prayerTime: Date, now: Date, settings: PrayerModeSettings, busy: BusyState,
+        prayer: Prayer, prayerTime: Date, now: Date, settings: FocusModeSettings, busy: BusyState,
         isScreenLocked: Bool, alreadyHandled: Bool, salahOwnsFocus: Bool, pendingNote: CardNote? = nil
     ) {
         self.prayer = prayer
@@ -63,13 +63,13 @@ public struct PrayerModeContext: Equatable, Sendable {
     var lateness: TimeInterval { now.timeIntervalSince(prayerTime) }
 }
 
-/// The single pure decision function for Prayer Mode. Everything about what to do at prayer
+/// The single pure decision function for Focus Mode. Everything about what to do at prayer
 /// time is decided here, with no side effects, so it is exhaustively unit-testable.
-public enum PrayerModePlanner {
+public enum FocusModePlanner {
     /// Actions are skipped once a trigger is more than this late (e.g. the Mac was asleep).
     public static let lateThreshold: TimeInterval = 10 * 60
 
-    public static func decide(_ ctx: PrayerModeContext) -> [PlannedAction] {
+    public static func decide(_ ctx: FocusModeContext) -> [PlannedAction] {
         let s = ctx.settings
         guard s.enabled, s.prayers.contains(ctx.prayer), !ctx.alreadyHandled, s.hasAnyAction else {
             return []
@@ -99,7 +99,7 @@ public enum PrayerModePlanner {
         return actions
     }
 
-    private static func busyActions(_ reason: BusyReason, settings s: PrayerModeSettings) -> [PlannedAction] {
+    private static func busyActions(_ reason: BusyReason, settings s: FocusModeSettings) -> [PlannedAction] {
         let cardLater = s.card.enabled && s.whenBusy.onCall == .nudgeThenCard
         var actions: [PlannedAction] = [.showNudge(reason: reason, cardLater: cardLater)]
         if cardLater { actions.append(.deferUntilFree) }
