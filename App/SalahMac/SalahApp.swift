@@ -41,7 +41,8 @@ struct SalahApp: App {
                     .keyboardShortcut("q", modifiers: [.command, .option])
             }
             CommandGroup(before: .toolbar) {
-                ForEach(Array(AppModel.Tab.allCases.enumerated()), id: \.element) { i, tab in
+                // ⌘1–⌘5 map to the first five screens; About has no shortcut of its own.
+                ForEach(Array(AppModel.Tab.allCases.prefix(5).enumerated()), id: \.element) { i, tab in
                     Button(tab.title) { model.tab = tab }
                         .keyboardShortcut(KeyEquivalent(Character(String(i + 1))))
                 }
@@ -79,11 +80,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.terminate(nil)
     }
 
+    /// Run just before a real quit (Quit Completely, log out/shutdown, update relaunch), so
+    /// Prayer Mode can turn off any Focus it turned on and close its card. Set by the model.
+    static var onWillTerminate: () -> Void = {}
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Never hold up log out, restart or shutdown.
         NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.willPowerOffNotification, object: nil, queue: .main
         ) { _ in AppDelegate.allowTermination = true }
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        Self.onWillTerminate()
     }
 
     /// ⌘Q, the Dock's Quit and the app menu's Quit only close the window: Salah keeps running

@@ -15,7 +15,7 @@ struct Salah: AsyncParsableCommand {
         version: SalahInfo.version,
         subcommands: [
             TodayCommand.self, NextCommand.self, ScheduleCommand.self, LocationCommand.self,
-            SetupCommand.self, ConfigCommand.self, RemindersCommand.self,
+            SetupCommand.self, ConfigCommand.self, RemindersCommand.self, PrayerModeCommand.self,
         ],
         defaultSubcommand: TodayCommand.self
     )

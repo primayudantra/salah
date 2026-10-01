@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Salah — Prayer Mode</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#D6D8D3; --bg:#F3F4F1; --chrome:#ECEDE9; --display:#E4E7E6; --red:#A10F24; --accent:#C21D35;
+  --text:#171717; --muted:#5E5E5C; --line:rgba(23,23,23,.12); --group:#ECEEEB;
+  --digits:"Doto","Menlo","Courier New",monospace;
+  --ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Helvetica Neue",Arial,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --desk:#070707; --bg:#151515; --chrome:#1C1D1D; --display:#1E2020; --red:#7E0C1C; --accent:#E0364E;
+    --text:#EDEDEA; --muted:#9A9A96; --line:rgba(255,255,255,.1); --group:#1C1E1E;
+  }
+}
+:root[data-theme="dark"]{
+  --desk:#070707; --bg:#151515; --chrome:#1C1D1D; --display:#1E2020; --red:#7E0C1C; --accent:#E0364E;
+  --text:#EDEDEA; --muted:#9A9A96; --line:rgba(255,255,255,.1); --group:#1C1E1E;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--desk);color:var(--text);font:13.5px/1.45 var(--ui);-webkit-font-smoothing:antialiased}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.stage{display:flex;justify-content:center;padding:40px 16px 60px}
+.window{width:100%;max-width:680px;background:var(--bg);border-radius:12px;overflow:hidden;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,.35),0 0 0 .5px rgba(0,0,0,.2)}
+.titlebar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:50px;padding:0 16px;background:var(--chrome);border-bottom:1px solid var(--line)}
+.lights{display:flex;gap:8px}.lights i{width:12px;height:12px;border-radius:50%;display:block}
+.lights i:nth-child(1){background:#FF5F57}.lights i:nth-child(2){background:#FEBC2E}.lights i:nth-child(3){background:#28C840}
+.seg{display:flex;background:var(--line);border-radius:7px;padding:2px;gap:2px;font-size:12.5px}
+.seg span{padding:4px 12px;border-radius:5px}.seg span.on{background:var(--bg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+
+.pane{padding:26px 28px 30px}
+h1{font-size:20px;font-weight:650;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 20px}
+.group{border:1px solid var(--line);border-radius:10px;background:var(--group);margin-bottom:16px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 16px;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item.child{padding-left:30px;background:color-mix(in srgb,var(--bg) 40%,transparent)}
+.item.child[hidden]{display:none}
+.lbl{font-weight:550}
+.hint{color:var(--muted);font-size:12.5px;margin-top:1px}
+.hint a{color:var(--accent)}
+.right{display:flex;align-items:center;gap:10px;flex:none}
+select{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+.btn{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:5px 12px;cursor:pointer;white-space:nowrap}
+.btn.primary{background:var(--accent);color:#fff;border-color:transparent;padding:8px 16px;font-weight:600}
+.switch{position:relative;width:38px;height:22px;flex:none}
+.switch input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+.switch span{position:absolute;inset:0;border-radius:11px;background:var(--line);transition:background .2s;pointer-events:none}
+.switch span::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .2s}
+.switch input:checked+span{background:var(--accent)}
+.switch input:checked+span::after{transform:translateX(16px)}
+.switch input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:12.5px}
+.chip[aria-pressed="true"]{background:var(--red);color:#FBEEF0;border-color:transparent}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:6px}
+.foot .hint{max-width:30em}
+.toast{margin-top:14px;font-size:13px;color:var(--muted);min-height:1.4em}
+
+.hero{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding-bottom:18px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.hero .sub{margin:0}
+.switch.big{width:50px;height:30px;margin-top:2px}
+.switch.big span{border-radius:15px}
+.switch.big span::after{width:26px;height:26px}
+.switch.big input:checked+span::after{transform:translateX(20px)}
+.sect{font-size:11.5px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:20px 0 8px 4px}
+#body.off{opacity:.45;pointer-events:none}
+
+/* call nudge */
+.nudge{position:fixed;z-index:15;top:calc(env(safe-area-inset-top,0px) + 14px);right:14px;width:360px;max-width:calc(100% - 28px);
+  background:rgba(28,28,28,.9);color:#EDEDEA;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-radius:14px;padding:14px 16px;box-shadow:0 14px 34px rgba(0,0,0,.3),0 0 0 .5px rgba(255,255,255,.1);
+  transform:translateX(calc(100% + 30px));transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.nudge.show{transform:none}
+.nudge .hd{display:flex;align-items:center;gap:10px}
+.nudge .ic{width:30px;height:30px;border-radius:8px;background:#A10F24;color:#FBEEF0;display:grid;place-items:center;font-size:15px;flex:none}
+.nudge b{font-size:14px}
+.nudge .live{margin-left:auto;font-size:11px;color:#E0364E;display:flex;align-items:center;gap:5px}
+.nudge .live::before{content:"";width:7px;height:7px;border-radius:50%;background:#E0364E}
+.nudge p{margin:10px 0 12px;font-size:13px;color:#CFCFCA}
+.nudge .row{display:flex;gap:8px;justify-content:flex-end}
+.nudge button{border:0;border-radius:7px;padding:6px 12px;cursor:pointer;font-size:12.5px;background:rgba(255,255,255,.12);color:#EDEDEA}
+.nudge button.pri{background:#EDEDEA;color:#171717;font-weight:600}
+
+/* full-screen card */
+.card{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
+  padding:calc(env(safe-area-inset-top,0px) + 24px) 24px calc(env(safe-area-inset-bottom,0px) + 24px);
+  background:rgba(14,14,14,.86);backdrop-filter:blur(30px) saturate(.8);-webkit-backdrop-filter:blur(30px) saturate(.8);
+  color:#EDEDEA;opacity:0;visibility:hidden;transition:opacity .9s ease,visibility 0s linear .9s}
+.card.show{opacity:1;visibility:visible;transition:opacity .9s ease}
+.inner{text-align:center;max-width:560px;transform:translateY(10px);transition:transform 1.2s cubic-bezier(.2,.8,.2,1)}
+.card.show .inner{transform:none}
+.moon{font-size:28px;color:#E0364E;line-height:1}
+.k{margin-top:22px;font-size:12px;font-weight:650;letter-spacing:.24em;color:#9A9A96}
+.pname{font-family:var(--digits);font-weight:900;font-size:clamp(72px,16vw,168px);line-height:1;margin-top:14px;letter-spacing:.02em;text-transform:uppercase}
+.meta{margin-top:14px;font-size:16px;color:#BDBDB8}
+.rule{width:64px;height:2px;background:#E0364E;margin:30px auto 24px;border-radius:1px}
+.status{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;min-height:28px}
+.pill{font-size:12.5px;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.08);color:#CFCFCA}
+.actions{margin-top:34px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.done{border:0;background:#EDEDEA;color:#171717;font-weight:650;font-size:16px;padding:12px 46px;border-radius:12px;cursor:pointer}
+.done:hover{background:#fff}
+.later{border:0;background:none;color:#9A9A96;cursor:pointer;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+.small{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);text-align:center;font-size:12px;color:#6F6F6B}
+.clock{position:absolute;top:calc(env(safe-area-inset-top,0px) + 20px);right:24px;font-size:13px;color:#8A8A86;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.card,.inner{transition:none!important}}
+@media (max-width:560px){.item{flex-wrap:wrap}.foot{flex-direction:column;align-items:stretch}}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <div class="lights" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="seg" aria-hidden="true"><span>Today</span><span>Schedule</span><span>Reminders</span><span class="on">Prayer Mode</span><span>Settings</span></div>
+      <div></div>
+    </div>
+
+    <div class="pane">
+      <div class="hero">
+        <div>
+          <h1>Prayer Mode</h1>
+          <p class="sub" id="heroSub">Clears the way at prayer time. Off until you turn it on.</p>
+        </div>
+        <label class="switch big"><input type="checkbox" id="master" checked aria-label="Prayer Mode"><span></span></label>
+      </div>
+
+      <div id="body">
+      <div class="sect">At prayer time</div>
+      <div class="group">
+        <div class="item">
+          <div><div class="lbl">Show a full-screen card</div><div class="hint">A calm screen with the prayer name. Done or Esc always closes it.</div></div>
+          <label class="switch"><input type="checkbox" id="card" checked aria-label="Show a full-screen card"><span></span></label>
+        </div>
+        <div class="item child" id="cardChild">
+          <div class="lbl" style="font-weight:450">Close by itself after</div>
+          <select id="autoClose" aria-label="Close by itself after"><option value="10">10 min</option><option value="15" selected>15 min</option><option value="30">30 min</option></select>
+        </div>
+        <div class="item">
+          <div><div class="lbl">Pause music</div><div class="hint">Apple Music and Spotify. macOS asks permission once per app.</div></div>
+          <label class="switch"><input type="checkbox" id="pause" checked aria-label="Pause music"><span></span></label>
+        </div>
+        <div class="item child" id="pauseChild">
+          <div class="lbl" style="font-weight:450">Resume when I tap Done</div>
+          <label class="switch"><input type="checkbox" id="resume" checked aria-label="Resume when I tap Done"><span></span></label>
+        </div>
+        <div class="item">
+          <div><div class="lbl">Turn on a Focus</div><div class="hint">Runs your “Salah Focus” shortcuts. <a href="#" id="addSc">Add Shortcuts…</a></div></div>
+          <label class="switch"><input type="checkbox" id="focus" aria-label="Turn on a Focus"><span></span></label>
+        </div>
+      </div>
+
+      <div class="sect">When you're busy</div>
+      <div class="group">
+        <div class="item">
+          <div><div class="lbl">On a call</div><div class="hint">Zoom, Teams, Slack huddles, Google Meet: anything using your mic or camera.</div></div>
+          <select id="callMode" aria-label="When on a call"><option value="after" selected>Nudge, card after</option><option value="nudge">Just nudge</option></select>
+        </div>
+        <div class="item">
+          <div><div class="lbl">When a Focus is on</div><div class="hint">Covers screen sharing if Do Not Disturb turns on while sharing. <a href="#" id="dndHow">How?</a></div></div>
+          <select id="focusMode" aria-label="When a Focus is on"><option value="busy" selected>Treat as busy</option><option value="ignore">Ignore</option></select>
+        </div>
+      </div>
+
+      <div class="sect">Prayers</div>
+      <div class="group">
+        <div class="item">
+          <div class="chips" id="chips">
+            <button class="chip" aria-pressed="false">Fajr</button>
+            <button class="chip" aria-pressed="true">Dhuhr</button>
+            <button class="chip" aria-pressed="true">Asr</button>
+            <button class="chip" aria-pressed="true">Maghrib</button>
+            <button class="chip" aria-pressed="true">Isha</button>
+          </div>
+          <div class="hint" style="text-align:right">Fajr is off so nothing<br>fires while you sleep.</div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <button class="btn" id="previewFocus">Preview with Focus on</button>
+        <div class="right"><button class="btn" id="previewCall">Preview on a call</button><button class="btn primary" id="preview">Preview at Asr</button></div>
+      </div>
+      </div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
+<div class="nudge" id="nudge" role="status" aria-live="polite">
+  <div class="hd"><div class="ic" aria-hidden="true">☾</div><b>Asr · 16:01</b><span class="live" id="callLbl">On a call</span></div>
+  <p id="nudgeText"></p>
+  <div class="row" id="nudgeBtns"></div>
+</div>
+
+<div class="card" id="cardView" role="dialog" aria-modal="true" aria-labelledby="pname" aria-hidden="true">
+  <div class="clock" id="clock"></div>
+  <div class="inner">
+    <div class="moon" aria-hidden="true">☾</div>
+    <div class="k">IT'S TIME FOR</div>
+    <div class="pname" id="pname">Asr</div>
+    <div class="meta">16:01 · Singapore</div>
+    <div class="rule"></div>
+    <div class="status" id="status"></div>
+    <div class="actions">
+      <button class="done" id="done">Done</button>
+      <button class="later" id="later">Remind me in 5 minutes</button>
+    </div>
+  </div>
+  <div class="small" id="small">Press Esc to close · Closes by itself in 15 min</div>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const pause=$("pause"), resume=$("resume"), focus=$("focus"), card=$("card"), master=$("master");
+function sync(){
+  $("pauseChild").hidden=!pause.checked;
+  $("cardChild").hidden=!card.checked;
+  $("body").classList.toggle("off",!master.checked);
+  const on=[...$("chips").querySelectorAll('.chip[aria-pressed="true"]')].map(c=>c.textContent);
+  $("heroSub").textContent=master.checked?(on.length?"On for "+on.join(", ")+".":"On, but no prayers selected."):"Clears the way at prayer time. Off until you turn it on.";
+}
+[pause,focus,card,master].forEach(el=>el.addEventListener("change",sync));
+$("chips").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{c.setAttribute("aria-pressed",c.getAttribute("aria-pressed")!=="true");sync()});
+sync();
+$("dndHow").onclick=e=>{e.preventDefault();toast("System Settings › Focus › Do Not Disturb › turn on “When mirroring or sharing the display”.")};
+$("addSc").onclick=e=>{e.preventDefault();toast("In the app, this adds “Salah Focus On” and “Salah Focus Off” to Shortcuts.")};
+
+let tToast;
+function toast(msg){$("toast").textContent=msg;clearTimeout(tToast);tToast=setTimeout(()=>$("toast").textContent="",6000)}
+
+let clockTimer, lastFocus;
+function tickClock(){const d=new Date();$("clock").textContent=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
+function actionsTaken(){
+  const a=[];
+  if(pause.checked)a.push("Spotify paused");
+  if(focus.checked)a.push("Focus on");
+  return a;
+}
+function openCard(){
+  const acts=actionsTaken();
+  if(!card.checked){
+    toast(acts.length?"Card is off, so you'd only see a notification. "+acts.join(" · ")+".":"Nothing is turned on.");
+    return;
+  }
+  $("status").innerHTML=(note?[note]:[]).concat(acts).map(a=>`<span class="pill">${a}</span>`).join("");
+  $("small").textContent="Press Esc to close · Closes by itself in "+$("autoClose").value+" min";
+  lastFocus=document.activeElement;
+  const cv=$("cardView"); cv.classList.add("show"); cv.setAttribute("aria-hidden","false");
+  tickClock(); clockTimer=setInterval(tickClock,10000);
+  setTimeout(()=>$("done").focus(),300);
+}
+function closeCard(snooze){
+  const cv=$("cardView"); cv.classList.remove("show"); cv.setAttribute("aria-hidden","true");
+  clearInterval(clockTimer);
+  if(snooze){toast("Okay. The card comes back in 5 minutes.")}
+  else{
+    const back=[];
+    if(pause.checked&&resume.checked)back.push("Spotify resumed");
+    if(focus.checked)back.push("Focus off");
+    toast("Welcome back."+(back.length?" "+back.join(" · ")+".":""));
+  }
+  if(lastFocus)lastFocus.focus();
+}
+$("preview").onclick=()=>{note="";openCard()};
+
+let note="", callTimer;
+function hideNudge(){$("nudge").classList.remove("show");clearTimeout(callTimer)}
+function showNudge(kind){
+  const after=card.checked&&$("callMode").value==="after";
+  const isCall=kind==="call";
+  $("callLbl").textContent=isCall?"On a call in Zoom":"Focus on";
+  $("nudgeText").textContent=isCall
+    ?(after?"You're on a call in Zoom, so Salah won't take over your screen. The card will show when your call ends."
+           :"You're on a call in Zoom, so Salah won't take over your screen or pause anything.")
+    :(after?"You have a Focus on, so Salah won't take over your screen. The card will show when it turns off."
+           :"You have a Focus on, so Salah won't take over your screen or pause anything.");
+  $("nudgeBtns").innerHTML=after
+    ?'<button id="nSkip">Skip this time</button><button class="pri" id="nOk">Got it</button>'
+    :'<button class="pri" id="nOk">Got it</button>';
+  $("nudge").classList.add("show");
+  const end=()=>{note=isCall?"Your call just ended":"Your Focus just turned off";simulateEnd(isCall)};
+  $("nOk").onclick=()=>{hideNudge();if(after)end()};
+  if($("nSkip"))$("nSkip").onclick=()=>{hideNudge();toast("Skipped. Nothing else will show for Asr.")};
+  callTimer=setTimeout(()=>{if(after){$("nudge").classList.remove("show");end()}},9000);
+}
+$("previewCall").onclick=()=>showNudge("call");
+$("previewFocus").onclick=()=>{
+  if($("focusMode").value!=="busy"){note="";openCard();return}
+  showNudge("focus");
+};
+function simulateEnd(isCall){
+  const n=note;
+  toast(isCall?"Simulating your call ending in 3 seconds…":"Simulating your Focus turning off in 3 seconds…");
+  setTimeout(()=>{note=n;openCard()},3000);
+}
+$("done").onclick=()=>closeCard(false);
+$("later").onclick=()=>closeCard(true);
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("cardView").classList.contains("show"))closeCard(false)});
+})();
+</script>
+</body>
+</html>

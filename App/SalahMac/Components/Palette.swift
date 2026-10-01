@@ -13,7 +13,8 @@ enum Palette {
     static let onAccent = dynamic(light: 0xFFFFFF, dark: 0x1A0508)
     static let text = dynamic(light: 0x171717, dark: 0xEDEDEA)
     /// #5E5E5C light (5.2:1), darker than the spec's #777777, which fails AA on the display.
-    static let secondary = dynamic(light: 0x5E5E5C, dark: 0x9A9A96, lightHC: 0x3A3A38, darkHC: 0xC8C8C4)
+    // Dark secondary brightened from 0x9A9A96: too dim against the menu bar popover's translucent material.
+    static let secondary = dynamic(light: 0x5E5E5C, dark: 0xBFBFBB, lightHC: 0x3A3A38, darkHC: 0xC8C8C4)
     static let highlight = dynamic(light: 0xF0F0EC, dark: 0x2A2C2C)
     static let onTimeline = dynamic(light: 0xFBEEF0, dark: 0xFBEEF0)
     /// Dimmed text on the red timeline: 4.8:1 light, 5.5:1 dark.

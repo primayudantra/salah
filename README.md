@@ -124,6 +124,15 @@ You can also use **Salah › Check for Updates…**, or turn off automatic check
 - Not sure which version you have? Open Salah › **About**.
 - Built from source? `git pull && scripts/build-app.sh`, then copy `build/Salah.app` to Applications again.
 
+### Beta releases
+
+Betas are published on GitHub as **prereleases** and are never offered by the automatic update
+check or by **Check for Updates…** — only a released (non-prerelease) version is ever pushed to
+people automatically. If you want to try a beta, download it by hand from the
+[Releases page](https://github.com/primayudantra/salah/releases) (look for the "Pre-release" tag)
+and install it the same way as a normal download. A later stable release still updates it
+automatically once you're on one, same as any other version.
+
 ### Uninstall
 
 1. Turn off **Launch at login** in Settings, then quit Salah completely: ☾ › **Quit Completely** (or **⌥⌘Q**).

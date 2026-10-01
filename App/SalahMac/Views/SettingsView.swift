@@ -190,6 +190,9 @@ struct UpdatesGroup: View {
             SettingsRow(label: "Check for updates automatically", hint: "Once a day, from GitHub Releases") {
                 Toggle("", isOn: $updater.autoCheck).toggleStyle(.switch).labelsHidden().tint(Palette.accent)
             }
+            SettingsRow(label: "Beta releases", hint: "Never offered here — download one from GitHub Releases if you want to try it early.") {
+                Link("Releases", destination: URL(string: "https://github.com/\(SalahInfo.repository)/releases")!).tint(Palette.accent)
+            }
         }
     }
 

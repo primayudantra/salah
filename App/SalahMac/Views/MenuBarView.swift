@@ -95,6 +95,12 @@ struct MenuBarView: View {
             ))
             .toggleStyle(.switch)
             .tint(Palette.accent)
+            Toggle("Prayer Mode", isOn: Binding(
+                get: { model.config.prayerMode.enabled },
+                set: { v in model.update { $0.prayerMode.enabled = v } }
+            ))
+            .toggleStyle(.switch)
+            .tint(Palette.accent)
             HStack {
                 Button("Open Salah") { model.showMainWindow() }
                     .buttonStyle(SecondaryButtonStyle())
@@ -107,6 +113,10 @@ struct MenuBarView: View {
         }
         .padding(14)
         .frame(width: 260)
+        .foregroundStyle(Palette.text)
+        // A solid background instead of the system's translucent popover material: that
+        // material lets the desktop wallpaper bleed through and wash out Palette.secondary.
+        .background(Palette.chrome)
         .onAppear { model.ticker.setMenuOpen(true) }
         .onDisappear { model.ticker.setMenuOpen(false) }
     }

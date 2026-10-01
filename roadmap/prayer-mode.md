@@ -2,8 +2,27 @@
 
 Addendum to `SPEC.md`. Design reference: `docs/design/salah-prayer-mode.html`.
 
-> **Status:** not built yet. Design reference HTML doesn't exist in `docs/design/` yet — needed before
-> implementation starts (section 10's mock-derived layout, section 11's nudge copy).
+> **Status:** built, not yet manually verified. All of v1 (§2) is implemented: the settings screen,
+> menu bar switch, `salah prayer-mode` CLI, the pure planner (§6, with full table-test coverage),
+> busy detection (§7), pausing Apple Music/Spotify (§8), Focus via Shortcuts (§9), the full-screen
+> card (§10) and busy nudge (§11), snoozing, auto-close, crash recovery, and the status line.
+>
+> **Covered by automated tests:** `PrayerModePlanner` (every rule in §6, `Tests/SalahCoreTests/PrayerModePlannerTests.swift`),
+> the config schema and migration (`PrayerModeConfigTests.swift`), and the CLI (`PrayerModeCommandTests.swift`).
+> These run in CI-equivalent form today even without Xcode (see the repo's testing notes).
+>
+> **Not yet verified — needs a human on real hardware**, because none of it can happen in a
+> sandboxed build environment: whether reading mic/camera "is running" triggers a permission
+> prompt (§7.1, §7.2); call-app naming across Zoom/Teams/Slack/Meet, muted and listen-only calls
+> (§7.1 known gaps, §13 manual matrix); open question 2 — whether the Focus Status capability
+> (§7.3) works at all in a Developer ID (non-App Store) build, since it needs an entitlement; the
+> AppleScript pause/resume permission prompt and denied state (§8); Shortcuts detection and
+> running (§9); the full-screen card actually covering full-screen apps, every display and every
+> Space (§10); and open question 1 (iCloud share links for the two Shortcuts).
+>
+> Code: `Sources/SalahCore/PrayerMode/` (settings, planner), `App/SalahMac/PrayerMode/` (busy
+> monitor, media controller, Focus controller, state, coordinator, card and nudge windows),
+> `App/SalahMac/Views/PrayerModeView.swift` (settings screen).
 
 ## 1. Summary
 

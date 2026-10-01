@@ -196,25 +196,27 @@ public struct ReminderSettings: Codable, Equatable, Sendable {
 
 /// The single shared configuration, read and written by both the app and the CLI.
 public struct SalahConfig: Codable, Equatable, Sendable {
-    public static let currentSchemaVersion = 1
+    public static let currentSchemaVersion = 2
 
     public var schemaVersion: Int
     public var location: SavedLocation?
     public var calculation: CalculationSettings
     public var display: DisplaySettings
     public var reminders: ReminderSettings
+    public var prayerMode: PrayerModeSettings
     public var launchAtLogin: Bool
 
     public init(
         location: SavedLocation? = nil, calculation: CalculationSettings = CalculationSettings(),
         display: DisplaySettings = DisplaySettings(), reminders: ReminderSettings = ReminderSettings(),
-        launchAtLogin: Bool = true
+        prayerMode: PrayerModeSettings = PrayerModeSettings(), launchAtLogin: Bool = true
     ) {
         self.schemaVersion = Self.currentSchemaVersion
         self.location = location
         self.calculation = calculation
         self.display = display
         self.reminders = reminders
+        self.prayerMode = prayerMode
         self.launchAtLogin = launchAtLogin
     }
 
@@ -225,6 +227,7 @@ public struct SalahConfig: Codable, Equatable, Sendable {
         calculation = try c.decodeIfPresent(CalculationSettings.self, forKey: .calculation) ?? CalculationSettings()
         display = try c.decodeIfPresent(DisplaySettings.self, forKey: .display) ?? DisplaySettings()
         reminders = try c.decodeIfPresent(ReminderSettings.self, forKey: .reminders) ?? ReminderSettings()
+        prayerMode = try c.decodeIfPresent(PrayerModeSettings.self, forKey: .prayerMode) ?? PrayerModeSettings()
         launchAtLogin = try c.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? true
     }
 

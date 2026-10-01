@@ -4,4 +4,4 @@ Specs for features not built yet. Each is an addendum to `SPEC.md`, not a replac
 
 | Spec | Status |
 | --- | --- |
-| [Prayer Mode](prayer-mode.md) | Not started. Needs a design mock at `docs/design/salah-prayer-mode.html` first, and an answer to open question 2 (Focus Status capability in a Developer ID build) before section 7.3 can be built. |
+| [Prayer Mode](prayer-mode.md) | Built. Planner, config and CLI have automated tests; busy detection, Focus Status, AppleScript permissions and the card/nudge windows need manual testing on real hardware (see the spec's status note) before calling it done. |

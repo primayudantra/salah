@@ -30,6 +30,10 @@
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>Prayer times by adhan-swift (MIT). Doto font (SIL OFL 1.1).</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Salah pauses Apple Music and Spotify at prayer time, only if you turn this on in Prayer Mode.</string>
+	<key>NSFocusStatusUsageDescription</key>
+	<string>Salah checks whether a Focus is on so it doesn't interrupt you at prayer time. Needed only for Prayer Mode's "Treat as busy" setting.</string>
 	<key>NSLocationUsageDescription</key>
 	<string>Salah uses your location once to calculate prayer times for where you are. Coordinates stay on this Mac.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

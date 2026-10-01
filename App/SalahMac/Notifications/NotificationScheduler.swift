@@ -69,6 +69,14 @@ final class NotificationScheduler: NSObject, UNUserNotificationCenterDelegate {
         return added
     }
 
+    /// Removes the already-delivered at-time (lead 0) banner for a prayer once its Prayer Mode
+    /// card is shown, so the user doesn't see both.
+    static func removeDeliveredAtTimeNotification(date: LocalDate, prayer: Prayer) {
+        guard Bundle.main.bundleIdentifier != nil else { return }
+        let id = NotificationPlanner.identifier(date: date, prayer: prayer, leadMinutes: 0)
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [id])
+    }
+
     func removeAll() async {
         guard let center else { return }
         let ids = await center.pendingNotificationRequests().map(\.identifier).filter { $0.hasPrefix(NotificationPlanner.idPrefix) }

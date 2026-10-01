@@ -46,6 +46,10 @@ enum SnapshotRenderer {
         shot("reminders", height: 900, RemindersView())
         shot("settings", height: 1300, SettingsView())
         shot("about", AboutView())
+        model.update { $0.prayerMode.enabled = true }
+        shot("prayer-mode", height: 1200, PrayerModeView())
+        model.update { $0.prayerMode = PrayerModeSettings() }
+        shot("prayer-mode-off", height: 1200, PrayerModeView())
         shot("menubar", width: 260, height: 400, MenuBarView(ticker: model.ticker).background(Palette.background))
         shot("menubar-dark", dark: true, width: 260, height: 400, MenuBarView(ticker: model.ticker).background(Color(white: 0.17)))
         model.update { $0.location = SavedLocation(name: "Tromsø", latitude: 69.6492, longitude: 18.9553, timeZone: "Europe/Oslo") }
