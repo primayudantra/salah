@@ -159,8 +159,17 @@ struct AboutView: View {
                 about("City search", "City search and place names use Apple's geocoder (CLGeocoder), so search queries and a coordinate lookup are sent to Apple.")
             }
             SettingsGroup {
+                SettingsRow(label: "Website") {
+                    Link(SalahInfo.websiteURL.host ?? "Website", destination: SalahInfo.websiteURL).tint(Palette.accent)
+                }
                 SettingsRow(label: "Documentation") {
-                    Link(SalahInfo.documentationURL.host ?? "Website", destination: SalahInfo.documentationURL).tint(Palette.accent)
+                    Link("README", destination: SalahInfo.documentationURL).tint(Palette.accent)
+                }
+                SettingsRow(label: "Discussions") {
+                    Link("GitHub", destination: SalahInfo.discussionsURL).tint(Palette.accent)
+                }
+                SettingsRow(label: "Issues") {
+                    Link("GitHub", destination: SalahInfo.issuesURL).tint(Palette.accent)
                 }
             }
         }

@@ -5,6 +5,9 @@ public enum SalahInfo {
     public static let appBundleIdentifier = "com.techwithprima.salah"
     public static let calculationLibrary = "adhan-swift 1.4.0 (Batoul Apps, MIT License)"
     public static let documentationURL = URL(string: "https://github.com/primayudantra/salah#readme")!
+    public static let websiteURL = URL(string: "https://salah.techwithprima.com")!
+    public static let discussionsURL = URL(string: "https://github.com/primayudantra/salah/discussions")!
+    public static let issuesURL = URL(string: "https://github.com/primayudantra/salah/issues")!
     /// GitHub repository whose releases are used for updates.
     public static let repository = "primayudantra/salah"
     public static let releasesURL = URL(string: "https://github.com/primayudantra/salah/releases")!

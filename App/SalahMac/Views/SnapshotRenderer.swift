@@ -45,7 +45,7 @@ enum SnapshotRenderer {
         shot("schedule", ScheduleView())
         shot("reminders", height: 900, RemindersView())
         shot("settings", height: 1300, SettingsView())
-        shot("about", AboutView())
+        shot("about", height: 1300, AboutView())
         model.update { $0.focusMode.enabled = true }
         shot("focus-mode", height: 1200, FocusModeView())
         model.update { $0.focusMode = FocusModeSettings() }
