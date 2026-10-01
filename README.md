@@ -406,6 +406,7 @@ App/SalahMac/            SwiftUI app: Views/, Components/, ViewModels/, Notifica
 Tests/                   SalahCoreTests, SalahCLITests
 scripts/                 build-app.sh, package.sh, make-assets.sh
 docs/design/mock.html    Interactive design mock
+roadmap/                 Specs for features not built yet (addenda to SPEC.md)
 ```
 
 ## Changelog
