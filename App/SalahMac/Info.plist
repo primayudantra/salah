@@ -19,21 +19,21 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.2.0</string>
+	<string>1.3.0</string>
 	<key>CFBundleVersion</key>
-	<string>3</string>
+	<string>4</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.lifestyle</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
-	<key>NSHighResolutionCapable</key>
-	<true/>
-	<key>NSHumanReadableCopyright</key>
-	<string>Prayer times by adhan-swift (MIT). Doto font (SIL OFL 1.1).</string>
 	<key>NSAppleEventsUsageDescription</key>
 	<string>Salah pauses Apple Music and Spotify at prayer time, only if you turn this on in Focus Mode.</string>
 	<key>NSFocusStatusUsageDescription</key>
 	<string>Salah checks whether a Focus is on so it doesn't interrupt you at prayer time. Needed only for Focus Mode's "Treat as busy" setting.</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSHumanReadableCopyright</key>
+	<string>Prayer times by adhan-swift (MIT). Doto font (SIL OFL 1.1).</string>
 	<key>NSLocationUsageDescription</key>
 	<string>Salah uses your location once to calculate prayer times for where you are. Coordinates stay on this Mac.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
