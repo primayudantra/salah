@@ -7,7 +7,7 @@
 A native macOS prayer-time app and a companion `salah` CLI, sharing one Swift core (`SalahCore`).
 Red prayer timeline, light-gray digital display, pixel digits — a prayer clock brought to life as software.
 
-**[⬇ Download the latest version](https://github.com/primayudantra/salah/releases/latest)** — current: **1.2.0**
+**[⬇ Download the latest version](https://github.com/primayudantra/salah/releases/latest)** — current: **1.3.0**
 
 - **Salah.app** — dashboard, schedule, reminders, settings, menu bar extra. The only component that schedules notifications.
 - **`salah` CLI** — prayer times, countdowns and schedules in the terminal; edits the same configuration.
@@ -19,23 +19,31 @@ Red prayer timeline, light-gray digital display, pixel digits — a prayer clock
 
 - **Today at a glance** — next prayer in big pixel digits, a live countdown, and the day's timeline with the
   Hijri date. On Fridays, Dhuhr shows as **Jumu'ah**.
+- **Focus Mode** — a calm full-screen card at prayer time that pauses Spotify/Apple Music and can turn on a
+  macOS Focus, then reverses both when you tap Done. Backs off with a small nudge if you're on a call or
+  already in a Focus.
 - **Reminders** — at prayer time and/or 5, 10, 15 or 30 minutes before, set per prayer, with quiet hours, pause,
   and a choice of sound. They keep firing even when the window is closed.
 - **Lives in the menu bar** — ☾ Asr · 12m. Closing the window or pressing ⌘Q keeps Salah running there.
 - **Schedule** — day, week or month, with copy, CSV and calendar (ICS) export.
 - **Accurate for where you are** — MUIS, Muslim World League, ISNA, Umm al-Qura, Egypt, Karachi, Dubai, Kuwait,
   Qatar, Moonsighting Committee, Turkey, Tehran or custom angles; Shafi'i or Hanafi Asr; per-prayer offsets.
+- **4 accent colors** — red, sage, blue or olive (Settings › Appearance), light and dark mode, 12- or 24-hour clock.
 - **Updates itself** from GitHub Releases.
-- **Light and dark mode**, 12- or 24-hour clock.
 - **Terminal command** — `salah` for times, countdowns and settings, with JSON output for scripts.
 - **Private** — no accounts or analytics; everything stays on your Mac.
 
-## What's new in 1.2.0
+## What's new in 1.3.0
 
-- **Quit keeps Salah in the menu bar.** ⌘Q, **Quit** in the Dock, or **Salah › Quit Salah** hide the window and
-  Dock icon; Salah keeps running in the menu bar so reminders stay scheduled.
-- **Quit Completely** (☾ popover, or **⌥⌘Q**) exits for real.
-- The menu bar popover no longer opens by itself after quitting or reopening, and its buttons are easier to read.
+- **Focus Mode** (renamed from an earlier "Prayer Mode"): at prayer time, show a full-screen card, pause
+  whatever's playing in Spotify/Apple Music, and turn on a macOS Focus — all reversed when you tap Done. It
+  steps aside with a small nudge instead if you're on a call or already in a Focus. A **"Run for real, once"**
+  button in Focus Mode lets you test the music pause/resume without waiting for a real prayer.
+- **Accent color** (Settings › Appearance): red (default), sage, blue or olive — recolors the timeline panel
+  and highlights app-wide, in both light and dark mode.
+- **About** now links to the website, **GitHub Discussions** and **Issues**, alongside the README.
+- Fixed: the menu bar's Reminders/Focus Mode switches had a stray focus-ring outline and weren't aligned;
+  **Open Salah** and **Quit Completely** could wrap onto two lines.
 
 See the [changelog](#changelog) for earlier versions.
 
@@ -419,6 +427,13 @@ roadmap/                 Specs for features not built yet (addenda to SPEC.md)
 ```
 
 ## Changelog
+
+### 1.3.0
+- Focus Mode (renamed from "Prayer Mode"): full-screen card, pausing Spotify/Apple Music, and turning on a
+  macOS Focus at prayer time, with busy detection (calls, an active Focus) and a "Run for real, once" test action.
+- Accent color themes: red, sage, blue, olive.
+- About: added Website, Discussions and Issues links.
+- Fixed menu bar popover switch alignment/focus-ring artifact and button wrapping.
 
 ### 1.2.0
 - ⌘Q, Dock › Quit and Salah › Quit Salah keep Salah running in the menu bar; **Quit Completely** (⌥⌘Q) exits.
