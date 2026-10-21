@@ -7,7 +7,7 @@
 A native macOS prayer-time app and a companion `salah` CLI, sharing one Swift core (`SalahCore`).
 Red prayer timeline, light-gray digital display, pixel digits — a prayer clock brought to life as software.
 
-**[⬇ Download the latest version](https://github.com/primayudantra/salah/releases/latest)** — current: **1.3.0**
+**[⬇ Download the latest version](https://github.com/primayudantra/salah/releases/latest)** — current: **1.4.0**
 
 - **Salah.app** — dashboard, schedule, reminders, settings, menu bar extra. The only component that schedules notifications.
 - **`salah` CLI** — prayer times, countdowns and schedules in the terminal; edits the same configuration.
@@ -22,6 +22,8 @@ Red prayer timeline, light-gray digital display, pixel digits — a prayer clock
 - **Focus Mode** — a calm full-screen card at prayer time that pauses Spotify/Apple Music and can turn on a
   macOS Focus, then reverses both when you tap Done. Backs off with a small nudge if you're on a call or
   already in a Focus.
+- **Quran player** — listen to any of the 114 surahs from six reciters, make playlists, and control it from
+  the menu bar, Control Center, the keyboard media keys or AirPods. Pauses itself at prayer time.
 - **Reminders** — at prayer time and/or 5, 10, 15 or 30 minutes before, set per prayer, with quiet hours, pause,
   and a choice of sound. They keep firing even when the window is closed.
 - **Lives in the menu bar** — ☾ Asr · 12m. Closing the window or pressing ⌘Q keeps Salah running there.
@@ -31,19 +33,21 @@ Red prayer timeline, light-gray digital display, pixel digits — a prayer clock
 - **4 accent colors** — red, sage, blue or olive (Settings › Appearance), light and dark mode, 12- or 24-hour clock.
 - **Updates itself** from GitHub Releases.
 - **Terminal command** — `salah` for times, countdowns and settings, with JSON output for scripts.
-- **Private** — no accounts or analytics; everything stays on your Mac.
+- **Private** — no accounts or analytics; your settings stay on your Mac. Quran audio streams from mp3quran.net
+  only when you press play.
 
-## What's new in 1.3.0
+## What's new in 1.4.0
 
-- **Focus Mode** (renamed from an earlier "Prayer Mode"): at prayer time, show a full-screen card, pause
-  whatever's playing in Spotify/Apple Music, and turn on a macOS Focus — all reversed when you tap Done. It
-  steps aside with a small nudge instead if you're on a call or already in a Focus. A **"Run for real, once"**
-  button in Focus Mode lets you test the music pause/resume without waiting for a real prayer.
-- **Accent color** (Settings › Appearance): red (default), sage, blue or olive — recolors the timeline panel
-  and highlights app-wide, in both light and dark mode.
-- **About** now links to the website, **GitHub Discussions** and **Issues**, alongside the README.
-- Fixed: the menu bar's Reminders/Focus Mode switches had a stray focus-ring outline and weren't aligned;
-  **Open Salah** and **Quit Completely** could wrap onto two lines.
+- **Quran player** — a new **Quran** screen (⌘4; Focus Mode moves to ⌘5). Play any surah, or play straight
+  through from one surah to the end, with Mishary Alafasy, Abdul Rahman Al-Sudais, Saad Al-Ghamdi, Mahmoud
+  Khalil Al-Husary, Maher Al-Muaiqly or Abdul Basit.
+  - **Playlists:** Full Quran and Juz 'Amma built in, plus your own (right-click a surah › Add to Playlist).
+  - **Player:** previous/next, seek, shuffle, repeat (all or one), and an editable Up Next queue.
+  - **Control it anywhere:** a mini player in the menu bar popover (drag its bar to seek), Control Center's
+    Now Playing, the keyboard media keys, and AirPods.
+  - **Prayer time:** pauses itself at each prayer. With Focus Mode's "Pause music" on, it resumes when you tap Done.
+  - **Picks up where you left off** after quitting, paused. Nothing plays or downloads until you press play.
+- Audio streams from mp3quran.net, so the Quran player needs an internet connection.
 
 See the [changelog](#changelog) for earlier versions.
 
@@ -54,7 +58,7 @@ Salah runs on **macOS 14 (Sonoma) or later**, on both Apple Silicon and Intel Ma
 ### Option 1 — Download the app (easiest)
 
 1. Go to the [latest release](https://github.com/primayudantra/salah/releases/latest) and download
-   `Salah-1.2.0-macOS.zip` (under **Assets**).
+   `Salah-1.4.0-macOS.zip` (under **Assets**).
 2. Double-click the zip to unzip it, then drag **Salah.app** into your **Applications** folder.
 3. Open Salah. Because the app isn't notarized by Apple, macOS blocks the first launch:
    - **macOS 14 (Sonoma):** in Finder, right-click **Salah.app** › **Open**, then click **Open** again.
@@ -427,6 +431,13 @@ roadmap/                 Specs for features not built yet (addenda to SPEC.md)
 ```
 
 ## Changelog
+
+### 1.4.0
+- Quran player: 114 surahs, six reciters, built-in and custom playlists, queue, shuffle and repeat; menu bar
+  mini player; Now Playing, media keys and headphone controls; pauses at prayer time (resumes on Focus Mode's Done).
+- New config keys: `quran.reciter`, `quran.repeat`, `quran.shuffle`, `quran.pauseAtPrayerTime`,
+  `quran.showInMenuBar`. Config schema version 3.
+- About: discloses the Quran audio source.
 
 ### 1.3.0
 - Focus Mode (renamed from "Prayer Mode"): full-screen card, pausing Spotify/Apple Music, and turning on a
