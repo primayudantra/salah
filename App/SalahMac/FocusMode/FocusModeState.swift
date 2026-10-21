@@ -9,6 +9,9 @@ struct FocusModeState: Codable, Equatable {
     var lastHandledID: String?
     /// Bundle IDs Salah paused and should resume on Done.
     var pausedApps: Set<String> = []
+    /// True when Salah paused its own Quran player and should resume it on Done. Optional so
+    /// state files written before the Quran player still decode.
+    var quranPaused: Bool?
     /// True while the active Focus was turned on by Salah (not the user).
     var salahTurnedFocusOn: Bool = false
     /// How many times the current card has been snoozed, reset once it's handled.

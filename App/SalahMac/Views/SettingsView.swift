@@ -155,8 +155,9 @@ struct AboutView: View {
                 about("Font", "Doto by The Doto Project Authors, licensed under the SIL Open Font License 1.1. The license is included in the app bundle (Contents/Resources/Fonts/OFL.txt).")
             }
             SettingsGroup {
-                about("Privacy", "Everything stays on this Mac. No accounts, analytics or sync. Your location is requested only when you choose “Use my location”, and coordinates are never sent anywhere. Update checks ask GitHub's public API for the latest release and send nothing about you.")
+                about("Privacy", "Your settings stay on this Mac. No accounts, analytics or sync. Your location is requested only when you choose “Use my location”, and coordinates are never sent anywhere. Update checks ask GitHub's public API for the latest release and send nothing about you.")
                 about("City search", "City search and place names use Apple's geocoder (CLGeocoder), so search queries and a coordinate lookup are sent to Apple.")
+                about("Quran audio", "Recitations stream from mp3quran.net, only when you press play. Your Mac requests the audio file directly; Salah sends nothing else. Reciters: \(QuranCatalog.reciters.map(\.name).joined(separator: ", ")). Surah names and details from Tanzil.")
             }
             SettingsGroup {
                 SettingsRow(label: "Website") {

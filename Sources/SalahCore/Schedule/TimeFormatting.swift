@@ -23,6 +23,14 @@ public enum TimeFormatting {
         return String(format: "%02d:%02d:%02d", s / 3600, (s % 3600) / 60, s % 60)
     }
 
+    /// Player time: "4:05", or "1:02:09" past an hour. Non-finite and negative values read "0:00".
+    public static func mediaTime(_ seconds: TimeInterval) -> String {
+        let s = seconds.isFinite ? max(0, Int(seconds.rounded(.down))) : 0
+        return s >= 3600
+            ? String(format: "%d:%02d:%02d", s / 3600, (s % 3600) / 60, s % 60)
+            : String(format: "%d:%02d", s / 60, s % 60)
+    }
+
     /// Compact form for menu bar and shell prompts: "42m", "1h 25m", "<1m". Truncates, matching the countdown.
     public static func short(_ seconds: TimeInterval) -> String {
         let m = Int(max(0, seconds) / 60)

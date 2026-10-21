@@ -214,7 +214,7 @@ public struct ReminderSettings: Codable, Equatable, Sendable {
 
 /// The single shared configuration, read and written by both the app and the CLI.
 public struct SalahConfig: Codable, Equatable, Sendable {
-    public static let currentSchemaVersion = 2
+    public static let currentSchemaVersion = 3
 
     public var schemaVersion: Int
     public var location: SavedLocation?
@@ -222,12 +222,14 @@ public struct SalahConfig: Codable, Equatable, Sendable {
     public var display: DisplaySettings
     public var reminders: ReminderSettings
     public var focusMode: FocusModeSettings
+    public var quran: QuranSettings
     public var launchAtLogin: Bool
 
     public init(
         location: SavedLocation? = nil, calculation: CalculationSettings = CalculationSettings(),
         display: DisplaySettings = DisplaySettings(), reminders: ReminderSettings = ReminderSettings(),
-        focusMode: FocusModeSettings = FocusModeSettings(), launchAtLogin: Bool = true
+        focusMode: FocusModeSettings = FocusModeSettings(), quran: QuranSettings = QuranSettings(),
+        launchAtLogin: Bool = true
     ) {
         self.schemaVersion = Self.currentSchemaVersion
         self.location = location
@@ -235,6 +237,7 @@ public struct SalahConfig: Codable, Equatable, Sendable {
         self.display = display
         self.reminders = reminders
         self.focusMode = focusMode
+        self.quran = quran
         self.launchAtLogin = launchAtLogin
     }
 
@@ -246,6 +249,7 @@ public struct SalahConfig: Codable, Equatable, Sendable {
         display = try c.decodeIfPresent(DisplaySettings.self, forKey: .display) ?? DisplaySettings()
         reminders = try c.decodeIfPresent(ReminderSettings.self, forKey: .reminders) ?? ReminderSettings()
         focusMode = try c.decodeIfPresent(FocusModeSettings.self, forKey: .focusMode) ?? FocusModeSettings()
+        quran = try c.decodeIfPresent(QuranSettings.self, forKey: .quran) ?? QuranSettings()
         launchAtLogin = try c.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? true
     }
 

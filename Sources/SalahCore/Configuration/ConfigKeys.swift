@@ -148,6 +148,17 @@ public enum ConfigKeys {
                     set: { c, v in c.focusMode.whenBusy.onCall = CallBusyMode(rawValue: v)! }),
             boolKey("focusMode.whenBusy.focusIsBusy", get: { $0.focusMode.whenBusy.focusIsBusy }, set: { $0.focusMode.whenBusy.focusIsBusy = $1 }),
         ]
+        keys += [
+            enumKey("quran.reciter", QuranCatalog.reciters.map(\.id),
+                    get: { $0.quran.reciterId },
+                    set: { c, v in c.quran.reciterId = v }),
+            enumKey("quran.repeat", QuranRepeatMode.allCases.map(\.rawValue),
+                    get: { $0.quran.repeatMode.rawValue },
+                    set: { c, v in c.quran.repeatMode = QuranRepeatMode(rawValue: v)! }),
+            boolKey("quran.shuffle", get: { $0.quran.shuffle }, set: { $0.quran.shuffle = $1 }),
+            boolKey("quran.pauseAtPrayerTime", get: { $0.quran.pauseAtPrayerTime }, set: { $0.quran.pauseAtPrayerTime = $1 }),
+            boolKey("quran.showInMenuBar", get: { $0.quran.showInMenuBar }, set: { $0.quran.showInMenuBar = $1 }),
+        ]
         keys.append(boolKey("launchAtLogin", get: { $0.launchAtLogin }, set: { $0.launchAtLogin = $1 }))
         return keys
     }()

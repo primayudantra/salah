@@ -89,6 +89,7 @@ struct MenuBarView: View {
             }
             UpdateRow(updater: model.updater)
             Divider()
+            QuranMiniPlayer(player: model.quranPlayer, progress: model.quranPlayer.progress)
             VStack(spacing: 10) {
                 MenuBarToggleRow(label: "Reminders", isOn: Binding(
                     get: { model.config.reminders.enabled },

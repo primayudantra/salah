@@ -39,6 +39,9 @@ final class FocusModeCoordinator {
     var nowProvider: () -> Date = Date.init
     /// A one-line status for the Focus Mode screen, e.g. a denied permission. `nil` clears it.
     var onStatusMessage: ((String?) -> Void)?
+    /// Pauses Salah's own Quran player if it's playing; returns whether it did. Set by the model.
+    var pauseQuran: (() -> Bool)?
+    var resumeQuran: (() -> Void)?
 
     /// Default-argument expressions aren't actor-isolated even in an `@MainActor` init, so the
     /// adapters are constructed by the caller (always on the main actor) and passed in.
@@ -176,8 +179,12 @@ final class FocusModeCoordinator {
     // MARK: - Actions
 
     private func runPauseMedia() async {
+        let quranPaused = pauseQuran?() ?? false
         let paused = await media.pauseIfPlaying(MediaApp.all)
-        stateStore.update { $0.pausedApps.formUnion(paused.map { $0.bundleID }) }
+        stateStore.update {
+            $0.pausedApps.formUnion(paused.map { $0.bundleID })
+            if quranPaused { $0.quranPaused = true }
+        }
     }
 
     private func runFocusOn() async {
@@ -308,6 +315,10 @@ final class FocusModeCoordinator {
             let apps = Set(MediaApp.all.filter { state.pausedApps.contains($0.bundleID) })
             Task { await media.resume(apps) }
             stateStore.update { $0.pausedApps.removeAll() }
+        }
+        if state.quranPaused == true {
+            if resume { resumeQuran?() }
+            stateStore.update { $0.quranPaused = nil }
         }
         if focusOff, state.salahTurnedFocusOn {
             Task { _ = await focus.turnOff() }

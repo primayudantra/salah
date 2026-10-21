@@ -10,7 +10,7 @@ private let log = Logger(subsystem: SalahInfo.appBundleIdentifier, category: "ap
 @MainActor
 final class AppModel: ObservableObject {
     enum Tab: String, CaseIterable, Identifiable {
-        case today, schedule, reminders, focusMode, settings, about
+        case today, schedule, reminders, quran, focusMode, settings, about
         var id: String { rawValue }
         var title: String { self == .focusMode ? "Focus Mode" : rawValue.capitalized }
     }
@@ -35,6 +35,7 @@ final class AppModel: ObservableObject {
     let locationProvider = LocationProvider()
     let updater = Updater()
     let focusModeCoordinator: FocusModeCoordinator
+    let quranPlayer: QuranPlayer
 
     private var watcher: ConfigWatcher?
     private var observers: [NSObjectProtocol] = []
@@ -46,6 +47,7 @@ final class AppModel: ObservableObject {
             configURL: store.url, busyMonitor: SystemBusyMonitor(),
             media: AppleScriptMediaController(), focus: ShortcutsFocusController()
         )
+        quranPlayer = QuranPlayer(configURL: store.url)
         loadFromDisk()
         scheduler.activate()
         watcher = ConfigWatcher(file: store.url) { [weak self] in
@@ -61,13 +63,20 @@ final class AppModel: ObservableObject {
         applyLaunchAtLogin()
         updater.start()
         focusModeCoordinator.configProvider = { [weak self] in self?.config ?? .default }
+        quranPlayer.configProvider = { [weak self] in self?.config ?? .default }
+        focusModeCoordinator.pauseQuran = { [weak self] in self?.quranPlayer.pauseForPrayer() ?? false }
+        focusModeCoordinator.resumeQuran = { [weak self] in self?.quranPlayer.resume() }
         focusModeCoordinator.onStatusMessage = { [weak self] message in
             MainActor.assumeIsolated { self?.focusModeStatusMessage = message }
         }
         AppDelegate.onWillTerminate = { [weak self] in
-            MainActor.assumeIsolated { self?.focusModeCoordinator.prepareForQuit() }
+            MainActor.assumeIsolated {
+                self?.focusModeCoordinator.prepareForQuit()
+                self?.quranPlayer.prepareForQuit()
+            }
         }
         focusModeCoordinator.start()
+        quranPlayer.refresh()
         Task {
             if config.reminders.enabled, config.location != nil, await scheduler.authorization() == .notDetermined {
                 await scheduler.requestAuthorization()
@@ -159,6 +168,7 @@ final class AppModel: ObservableObject {
         }
         replan()
         focusModeCoordinator.refresh()
+        quranPlayer.configDidChange(from: old)
     }
 
     // MARK: - Focus Mode permissions
@@ -267,6 +277,7 @@ final class AppModel: ObservableObject {
             MainActor.assumeIsolated {
                 self?.ticker.refresh()
                 self?.replan()
+                self?.quranPlayer.refresh()
             }
         }
         observers.append(ws.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main, using: refresh))
