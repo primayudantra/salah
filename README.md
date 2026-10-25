@@ -7,9 +7,9 @@
 A native macOS prayer-time app and a companion `salah` CLI, sharing one Swift core (`SalahCore`).
 Red prayer timeline, light-gray digital display, pixel digits — a prayer clock brought to life as software.
 
-**[⬇ Download the latest version](https://github.com/primayudantra/salah/releases/latest)** — current: **1.4.0**
+**[⬇ Download the latest version](https://github.com/primayudantra/salah/releases/latest)** — current: **1.5.0**
 
-- **Salah.app** — dashboard, schedule, reminders, settings, menu bar extra. The only component that schedules notifications.
+- **Salah.app** — home, dashboard, schedule, reminders, Kind Words, du'a, settings, menu bar extra. The only component that schedules notifications.
 - **`salah` CLI** — prayer times, countdowns and schedules in the terminal; edits the same configuration.
 
 > Calculated prayer times are approximations. Your local authority may differ by several minutes;
@@ -17,6 +17,15 @@ Red prayer timeline, light-gray digital display, pixel digits — a prayer clock
 
 ## Features
 
+- **Home** — today as a timeline of the prayers and every gentle reminder around them, next to widgets you
+  choose and order: next prayer (or Friday's last hour), prayer times, du'a of the day, Quran, sunnah fasting.
+- **Kind Words** — quiet, sourced notifications through the day from a Muslim perspective: a kind word every
+  few hours, a verse on the early prayer reminder, "Have you prayed?" after each prayer, Al-Kahf and the last
+  hour after Asr on Friday, and optional du'a at the start and end of work. Silent by default, off until you
+  turn it on.
+- **Du'a** — 21 authentic du'a for the moments of your day, with transliteration and source; copy one or send
+  it as a notification.
+- **Sunnah fasting** — the schedule marks Mondays and Thursdays, the White Days, Arafah and Ashura.
 - **Today at a glance** — next prayer in big pixel digits, a live countdown, and the day's timeline with the
   Hijri date. On Fridays, Dhuhr shows as **Jumu'ah**.
 - **Focus Mode** — a calm full-screen card at prayer time that pauses Spotify/Apple Music and can turn on a
@@ -30,24 +39,37 @@ Red prayer timeline, light-gray digital display, pixel digits — a prayer clock
 - **Schedule** — day, week or month, with copy, CSV and calendar (ICS) export.
 - **Accurate for where you are** — MUIS, Muslim World League, ISNA, Umm al-Qura, Egypt, Karachi, Dubai, Kuwait,
   Qatar, Moonsighting Committee, Turkey, Tehran or custom angles; Shafi'i or Hanafi Asr; per-prayer offsets.
-- **4 accent colors** — red, sage, blue or olive (Settings › Appearance), light and dark mode, 12- or 24-hour clock.
+- **7 accent colors** — red, sage, blue, olive and the earth tones forest, earth and clay (Settings ›
+  Appearance); the Dock icon follows your choice. Light and dark mode, 12- or 24-hour clock.
 - **Updates itself** from GitHub Releases.
 - **Terminal command** — `salah` for times, countdowns and settings, with JSON output for scripts.
 - **Private** — no accounts or analytics; your settings stay on your Mac. Quran audio streams from mp3quran.net
   only when you press play.
 
-## What's new in 1.4.0
+## What's new in 1.5.0
 
-- **Quran player** — a new **Quran** screen (⌘4; Focus Mode moves to ⌘5). Play any surah, or play straight
-  through from one surah to the end, with Mishary Alafasy, Abdul Rahman Al-Sudais, Saad Al-Ghamdi, Mahmoud
-  Khalil Al-Husary, Maher Al-Muaiqly or Abdul Basit.
-  - **Playlists:** Full Quran and Juz 'Amma built in, plus your own (right-click a surah › Add to Playlist).
-  - **Player:** previous/next, seek, shuffle, repeat (all or one), and an editable Up Next queue.
-  - **Control it anywhere:** a mini player in the menu bar popover (drag its bar to seek), Control Center's
-    Now Playing, the keyboard media keys, and AirPods.
-  - **Prayer time:** pauses itself at each prayer. With Focus Mode's "Pause music" on, it resumes when you tap Done.
-  - **Picks up where you left off** after quitting, paused. Nothing plays or downloads until you press play.
-- Audio streams from mp3quran.net, so the Quran player needs an internet connection.
+- **A new look** — a Mac sidebar replaces the tab bar, with the next prayer under "Salah" in pixel digits, and
+  the window no longer has a title bar.
+- **Home** (⌘1, the new first screen) — a greeting, today's timeline of prayers and notifications (past ones
+  dimmed), and widgets you turn on, off and reorder with **Customize**: next prayer, prayer times, du'a of the
+  day, Quran, sunnah fasting, kind word of the day and the Kind Words schedule.
+- **Kind Words** (⌘7) — gentle, sourced notifications, all in English:
+  - a kind word every 4 hours (09:00, 13:00, 17:00, 21:00) or at peak moments, skipped near a prayer;
+  - a verse or hadith on the early prayer reminder (Al-Jumu'ah 62:9 before Jumu'ah);
+  - "Have you prayed Asr?" 20–60 minutes after each prayer, with a short dhikr;
+  - Friday: Al-Kahf at 08:00 and **the last hour before Maghrib**, when du'a is answered;
+  - optional du'a at the start and end of your work day (Monday to Friday).
+  It's off by default and silent by default, and follows pause and quiet hours. **Send a preview** shows one now.
+- **Du'a** (⌘8) — morning & evening, before and after work, after any activity, through the day and in
+  hardship. Each has **Copy** and **Notify me**.
+- **Sunnah fasting** — the Schedule tags Mondays and Thursdays, the White Days (13–15 of each Hijri month),
+  Arafah and Ashura. Never in Ramadan, on Eid or the days of Tashriq. Hover a tag for its source.
+- **Earth-tone themes** — Forest (black-green), Earth (brown and moss) and Clay (terracotta). The Dock icon
+  takes your color while Salah runs.
+- Shortcuts: Home ⌘1, Today ⌘2, Schedule ⌘3, Reminders ⌘4, Quran ⌘5, Focus Mode ⌘6, Kind Words ⌘7, Du'a ⌘8.
+
+Please have the Kind Words and du'a library reviewed by someone you trust; hadith gradings differ between scholars.
+Every entry shows its source.
 
 See the [changelog](#changelog) for earlier versions.
 
@@ -58,7 +80,7 @@ Salah runs on **macOS 14 (Sonoma) or later**, on both Apple Silicon and Intel Ma
 ### Option 1 — Download the app (easiest)
 
 1. Go to the [latest release](https://github.com/primayudantra/salah/releases/latest) and download
-   `Salah-1.4.0-macOS.zip` (under **Assets**).
+   `Salah-1.5.0-macOS.zip` (under **Assets**).
 2. Double-click the zip to unzip it, then drag **Salah.app** into your **Applications** folder.
 3. Open Salah. Because the app isn't notarized by Apple, macOS blocks the first launch:
    - **macOS 14 (Sonoma):** in Finder, right-click **Salah.app** › **Open**, then click **Open** again.
@@ -156,7 +178,7 @@ automatically once you're on one, same as any other version.
 
 | Keys | Action |
 | --- | --- |
-| ⌘1 – ⌘5 | Today, Schedule, Reminders, Settings, About |
+| ⌘1 – ⌘8 | Home, Today, Schedule, Reminders, Quran, Focus Mode, Kind Words, Du'a |
 | ⌘, | Settings |
 | ← / → | Previous / next day, week or month (Schedule) |
 | T | Back to today |
@@ -271,6 +293,7 @@ List every key with `salah config get`. Common ones:
 | `calculation.offsets.<prayer>` | minutes, −60…60 |
 | `display.clock` | `12`, `24` |
 | `display.theme` | `system`, `light`, `dark` |
+| `display.accentTheme` | `red`, `sage`, `blue`, `olive`, `forest`, `earth`, `clay` |
 | `display.jumuahRelabel` | `true`, `false` |
 | `display.hijriAdjustment` | −2…2 days |
 | `display.nowWindowMinutes` | 0…60 (default 15) |
@@ -280,16 +303,24 @@ List every key with `salah config get`. Common ones:
 | `reminders.sound` | `systemDefault`, `chime`, `silent` |
 | `reminders.quietHours.enabled` / `.start` / `.end` | `true`/`false`, `HH:MM` |
 | `reminders.pausedUntil` | ISO 8601 date-time, or `none` |
+| `kindWords.enabled` | `true`, `false` (default `false`) |
+| `kindWords.cadence` | `everyFourHours`, `peakMoments`, `off` |
+| `kindWords.beforePrayer`, `kindWords.afterPrayer`, `kindWords.friday`, `kindWords.workDuas`, `kindWords.silent` | `true`, `false` |
+| `kindWords.afterPrayerMinutes` | `20`, `30`, `45`, `60` |
+| `kindWords.workStart` / `kindWords.workEnd` | `HH:MM` |
+| `home.widgets` | comma-separated, in order: `nextPrayer`, `prayerTimes`, `duaOfTheDay`, `quran`, `sunnahFast`, `kindWord`, `kindWordsSchedule` |
 
 ## Reminders and the 3-day window
 
 macOS notifications need an app bundle, so **only Salah.app schedules them**. It keeps a rolling window of
-calendar-trigger notifications for the next **3 days** (at most 30, well under macOS's 64-per-app cap).
+calendar-trigger notifications for the next **3 days** (at most 48, under macOS's 64-per-app cap). With
+Kind Words on, the cap fills in about two days; the earliest notifications always win.
 Scheduled notifications fire even when Salah is closed or completely quit.
 
 The window is topped up on launch, wake from sleep, local midnight, time or time-zone changes, and any change to
 location, method, offsets or reminder settings (including changes made with the CLI). Each top-up removes all
-pending `salah.*` requests and re-adds the window, with deterministic IDs (`salah.<yyyy-MM-dd>.<prayer>.<lead>`),
+pending `salah.*` requests and re-adds the window, with deterministic IDs (`salah.<yyyy-MM-dd>.<prayer>.<lead>`, and
+`salah.<yyyy-MM-dd>.kind.<slot>` for Kind Words),
 so there are never duplicates.
 
 **Limitation:** if Salah.app doesn't run for more than 3 days, reminders stop until it runs again.
@@ -421,7 +452,7 @@ All time-dependent logic takes an injected `now`; the CLI honours `SALAH_NOW` (I
 
 ```
 Package.swift            SalahCore + salah CLI + SalahMac app targets
-Sources/SalahCore/       Calculation, Location, Schedule, Configuration, NotificationPlanning, Updates (no UI imports)
+Sources/SalahCore/       Calculation, Location, Schedule, Configuration, NotificationPlanning, KindWords, Quran, FocusMode, Updates (no UI imports)
 Sources/salah/           CLI: Commands/, Output/
 App/SalahMac/            SwiftUI app: Views/, Components/, ViewModels/, Notifications/, Updates/, Resources/, Info.plist
 Tests/                   SalahCoreTests, SalahCLITests
@@ -431,6 +462,15 @@ roadmap/                 Specs for features not built yet (addenda to SPEC.md)
 ```
 
 ## Changelog
+
+### 1.5.0
+- Home screen with today's timeline and customizable widgets; Mac sidebar; hidden title bar.
+- Kind Words: kind words through the day, verses on early prayer reminders, after-prayer check-ins, Friday
+  Al-Kahf and last-hour reminders, optional work du'a. Off and silent by default.
+- Du'a screen: 21 du'a by moment with transliteration, source, Copy and Notify me.
+- Schedule marks sunnah fasting days.
+- Forest, Earth and Clay accent themes; the Dock icon follows the accent.
+- New config keys: `kindWords.*`, `home.widgets`. Pending notification cap is 48.
 
 ### 1.4.0
 - Quran player: 114 surahs, six reciters, built-in and custom playlists, queue, shuffle and repeat; menu bar
