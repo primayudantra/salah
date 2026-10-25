@@ -22,7 +22,9 @@ struct SalahApp: App {
                 .onAppear { model.mainWindowDidOpen() }
                 .onDisappear { model.mainWindowDidClose() }
         }
-        .defaultSize(width: 940, height: 560)
+        .defaultSize(width: 1140, height: 600)
+        // No title bar: the sidebar's own "Salah" header names the window.
+        .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .appSettings) {
@@ -41,8 +43,8 @@ struct SalahApp: App {
                     .keyboardShortcut("q", modifiers: [.command, .option])
             }
             CommandGroup(before: .toolbar) {
-                // ⌘1–⌘5 map to the first five screens; About has no shortcut of its own.
-                ForEach(Array(AppModel.Tab.allCases.prefix(5).enumerated()), id: \.element) { i, tab in
+                // ⌘1–⌘8 map to the screens above the sidebar's divider; Settings is ⌘, and About has no shortcut.
+                ForEach(Array(AppModel.Tab.allCases.filter { !$0.isFooter }.enumerated()), id: \.element) { i, tab in
                     Button(tab.title) { model.tab = tab }
                         .keyboardShortcut(KeyEquivalent(Character(String(i + 1))))
                 }

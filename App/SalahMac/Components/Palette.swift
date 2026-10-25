@@ -118,12 +118,47 @@ private extension AccentTheme {
                 onTimelineLight: 0x171717, onTimelineDark: 0xEDEDEA,
                 onTimelineDimLight: 0x2A2D26, onTimelineDimDark: 0xBBBEB3
             )
+        case .forest:
+            // Black-green: a deep forest panel with light text in both modes.
+            return AccentHex(
+                timelineLight: 0x2F4A3A, timelineDark: 0x1C2E24,
+                accentLight: 0x2F5A41, accentDark: 0x8FC1A2,
+                onAccentLight: 0xFFFFFF, onAccentDark: 0x111111,
+                onTimelineLight: 0xEEF2EC, onTimelineDark: 0xEEF2EC,
+                onTimelineDimLight: 0xB9C7BD, onTimelineDimDark: 0xA9B8AD
+            )
+        case .earth:
+            // Green and brown: a bark-brown panel with moss-green accents.
+            return AccentHex(
+                timelineLight: 0x5A4A32, timelineDark: 0x3E3324,
+                accentLight: 0x5E6B3A, accentDark: 0xB7C48E,
+                onAccentLight: 0xFFFFFF, onAccentDark: 0x171717,
+                onTimelineLight: 0xF3EDE3, onTimelineDark: 0xF3EDE3,
+                onTimelineDimLight: 0xD5C8B3, onTimelineDimDark: 0xC2B59F
+            )
+        case .clay:
+            // Terracotta.
+            return AccentHex(
+                timelineLight: 0x8C4425, timelineDark: 0x6E361E,
+                accentLight: 0x9A4A26, accentDark: 0xE79A76,
+                onAccentLight: 0xFFFFFF, onAccentDark: 0x1A0C06,
+                onTimelineLight: 0xFBF0EA, onTimelineDark: 0xFBF0EA,
+                onTimelineDimLight: 0xEBC9B8, onTimelineDimDark: 0xD9B4A2
+            )
         }
     }
 }
 
 /// The swatch shown in the Settings picker, in the current appearance.
 extension AccentTheme {
+    /// The Dock icon's background and crescent for this theme.
+    var iconColors: (background: NSColor, foreground: NSColor) {
+        let h = hex
+        // Red keeps the shipped icon's crimson; the light themes use their darker panel tone.
+        let bg: UInt32 = self == .red ? 0xA10F24 : (h.onTimelineLight == 0x171717 ? h.timelineDark : h.timelineLight)
+        return (NSColor(hex: bg), NSColor(hex: h.onTimelineDark))
+    }
+
     func swatchColor(dark: Bool) -> Color {
         let h = hex
         return Color(nsColor: NSColor(hex: dark ? h.timelineDark : h.timelineLight))

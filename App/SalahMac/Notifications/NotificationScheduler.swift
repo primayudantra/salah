@@ -56,7 +56,7 @@ final class NotificationScheduler: NSObject, UNUserNotificationCenterDelegate {
         for item in plan {
             let request = UNNotificationRequest(
                 identifier: item.id,
-                content: content(title: item.title, body: item.body, sound: config.reminders.sound),
+                content: content(title: item.title, body: item.body, sound: item.silent ? .silent : config.reminders.sound),
                 trigger: trigger(for: item.fireDate, in: tz)
             )
             do {

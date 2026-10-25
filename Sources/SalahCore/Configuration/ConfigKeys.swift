@@ -159,6 +159,37 @@ public enum ConfigKeys {
             boolKey("quran.pauseAtPrayerTime", get: { $0.quran.pauseAtPrayerTime }, set: { $0.quran.pauseAtPrayerTime = $1 }),
             boolKey("quran.showInMenuBar", get: { $0.quran.showInMenuBar }, set: { $0.quran.showInMenuBar = $1 }),
         ]
+        keys += [
+            boolKey("kindWords.enabled", get: { $0.kindWords.enabled }, set: { $0.kindWords.enabled = $1 }),
+            enumKey("kindWords.cadence", KindWordsCadence.allCases.map(\.rawValue),
+                    get: { $0.kindWords.cadence.rawValue },
+                    set: { c, v in c.kindWords.cadence = KindWordsCadence(rawValue: v)! }),
+            boolKey("kindWords.beforePrayer", get: { $0.kindWords.beforePrayer }, set: { $0.kindWords.beforePrayer = $1 }),
+            boolKey("kindWords.afterPrayer", get: { $0.kindWords.afterPrayer }, set: { $0.kindWords.afterPrayer = $1 }),
+            enumKey("kindWords.afterPrayerMinutes", KindWordsSettings.allowedAfterPrayerMinutes.map(String.init),
+                    get: { String($0.kindWords.afterPrayerMinutes) },
+                    set: { c, v in c.kindWords.afterPrayerMinutes = Int(v)! }),
+            boolKey("kindWords.friday", get: { $0.kindWords.friday }, set: { $0.kindWords.friday = $1 }),
+            boolKey("kindWords.workDuas", get: { $0.kindWords.workDuas }, set: { $0.kindWords.workDuas = $1 }),
+            timeKey("kindWords.workStart", get: { $0.kindWords.workStart }, set: { $0.kindWords.workStart = $1 }),
+            timeKey("kindWords.workEnd", get: { $0.kindWords.workEnd }, set: { $0.kindWords.workEnd = $1 }),
+            boolKey("kindWords.silent", get: { $0.kindWords.silent }, set: { $0.kindWords.silent = $1 }),
+        ]
+        keys.append(ConfigKey(
+            key: "home.widgets", expected: "comma-separated, in order: " + HomeWidget.allCases.map(\.rawValue).joined(separator: ","),
+            getter: { c in c.home.widgets.map(\.rawValue).joined(separator: ",") },
+            setter: { c, v in
+                let names = v.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+                var out: [HomeWidget] = []
+                for n in names {
+                    guard let w = HomeWidget(rawValue: n) else {
+                        throw ConfigKeyError.invalidValue(key: "home.widgets", value: v, expected: "comma-separated, in order: " + HomeWidget.allCases.map(\.rawValue).joined(separator: ","))
+                    }
+                    if !out.contains(w) { out.append(w) }
+                }
+                c.home.widgets = out
+            }
+        ))
         keys.append(boolKey("launchAtLogin", get: { $0.launchAtLogin }, set: { $0.launchAtLogin = $1 }))
         return keys
     }()

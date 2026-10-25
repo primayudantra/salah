@@ -10,12 +10,36 @@ private let log = Logger(subsystem: SalahInfo.appBundleIdentifier, category: "ap
 @MainActor
 final class AppModel: ObservableObject {
     enum Tab: String, CaseIterable, Identifiable {
-        case today, schedule, reminders, quran, focusMode, settings, about
+        case home, today, schedule, reminders, quran, focusMode, kindWords, duas, settings, about
         var id: String { rawValue }
-        var title: String { self == .focusMode ? "Focus Mode" : rawValue.capitalized }
+        var title: String {
+            switch self {
+            case .focusMode: return "Focus Mode"
+            case .kindWords: return "Kind Words"
+            case .duas: return "Du'a"
+            default: return rawValue.capitalized
+            }
+        }
+        /// SF Symbol for the sidebar.
+        var symbol: String {
+            switch self {
+            case .home: return "house"
+            case .today: return "sun.max"
+            case .schedule: return "calendar"
+            case .reminders: return "bell"
+            case .quran: return "book"
+            case .focusMode: return "circle.circle"
+            case .kindWords: return "heart"
+            case .duas: return "hands.and.sparkles"
+            case .settings: return "gearshape"
+            case .about: return "info.circle"
+            }
+        }
+        /// The screens grouped below a divider in the sidebar.
+        var isFooter: Bool { self == .settings || self == .about }
     }
 
-    @Published var tab: Tab = .today
+    @Published var tab: Tab = .home
     @Published private(set) var config: SalahConfig = .default
     /// Set when the config file exists but can't be read. The dashboard shows a reset action.
     @Published private(set) var configError: String?
@@ -264,6 +288,31 @@ final class AppModel: ObservableObject {
         }
     }
 
+    /// Sends one kind word now, as it would arrive: a daytime kind word, an after-prayer
+    /// check-in or the Friday last hour, picked at random.
+    func sendKindWordPreview() {
+        let lib = KindWordsLibrary.bundled
+        let label = clockState(at: Date())?.next?.label(jumuahRelabel: display.jumuahRelabel) ?? "Asr"
+        var options: [(String, String)] = lib.words(.kindWord).map { ("A kind word", $0.notificationBody) }
+        options += lib.words(.afterPrayer).map { ("Have you prayed \(label)?", $0.notificationBody) }
+        if let w = lib.word(id: KindWordsLibrary.lastHourId) { options.append(("The last hour of Friday", w.notificationBody)) }
+        guard let (title, body) = options.randomElement() else { return }
+        let sound: ReminderSound = config.kindWords.silent ? .silent : config.reminders.sound
+        Task {
+            _ = await scheduler.sendTest(title: title, body: body, sound: sound)
+            await refreshAuthorization()
+        }
+    }
+
+    /// Sends a du'a as a notification now, so it's there to read and recite.
+    func sendDuaNotification(_ dua: Dua) {
+        let sound: ReminderSound = config.kindWords.silent ? .silent : config.reminders.sound
+        Task {
+            _ = await scheduler.sendTest(title: dua.label, body: "\(dua.english)\n\(dua.transliteration)\n— \(dua.source)", sound: sound)
+            await refreshAuthorization()
+        }
+    }
+
     func pause(until date: Date?) {
         update { $0.reminders.pausedUntil = date }
     }
@@ -383,6 +432,7 @@ final class AppModel: ObservableObject {
 
     private func applyAccentTheme() {
         Palette.current = config.display.accentTheme
+        AppIconRenderer.apply(config.display.accentTheme)
     }
 
     private func applyLaunchAtLogin() {

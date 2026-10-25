@@ -53,6 +53,12 @@ struct ScheduleView: View {
             Text("Sunrise marks the end of Fajr and is not a prayer.")
                 .foregroundStyle(Palette.secondary)
                 .padding(.top, 14)
+            if days.contains(where: { !SunnahFast.reasons(on: $0.date, hijriAdjustment: model.display.hijriAdjustment).isEmpty }) {
+                Text("Sunnah fast: Mondays and Thursdays, the White Days (13–15 of each Hijri month), Arafah and Ashura. Hover a tag for its source.")
+                    .foregroundStyle(Palette.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 4)
+            }
             if days.contains(where: \.hasUndefined) {
                 Text("— means the time can't be calculated here on that date.")
                     .foregroundStyle(Palette.accent)
@@ -80,7 +86,7 @@ struct ScheduleView: View {
                 Divider().overlay(Palette.line).gridCellUnsizedAxes(.horizontal)
                 let isToday = d.date == today
                 GridRow {
-                    cell(Text(TimeFormatting.shortDate(d.date)), isToday: isToday, first: true)
+                    dateCell(d.date, isToday: isToday)
                     ForEach(Prayer.allCases, id: \.self) { p in
                         timeCell(d, p, isToday: isToday)
                     }
@@ -92,7 +98,7 @@ struct ScheduleView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
-    private func cell(_ t: Text, header: Bool = false, isToday: Bool = false, first: Bool = false) -> some View {
+    private func cell(_ t: Text, header: Bool = false, isToday: Bool = false) -> some View {
         t.font(.system(size: header ? 11.5 : 13, weight: header ? .semibold : .regular))
             .foregroundStyle(header ? Palette.secondary : Palette.text)
             .lineLimit(1)
@@ -100,9 +106,31 @@ struct ScheduleView: View {
             .padding(.horizontal, 14).padding(.vertical, 10)
             .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
             .background(isToday ? Palette.highlight : Color.clear)
-            .overlay(alignment: .leading) {
-                if isToday && first { Rectangle().fill(Palette.accent).frame(width: 3) }
+    }
+
+    /// The date, with a sunnah fasting tag under it (Monday, Thursday, the White Days…).
+    private func dateCell(_ date: LocalDate, isToday: Bool) -> some View {
+        let reasons = SunnahFast.reasons(on: date, hijriAdjustment: model.display.hijriAdjustment)
+        let tag = SunnahFast.tag(reasons)
+        return VStack(alignment: .leading, spacing: 1) {
+            Text(TimeFormatting.shortDate(date))
+                .font(.system(size: 13))
+                .foregroundStyle(Palette.text)
+                .lineLimit(1)
+                .fixedSize()
+            if let tag {
+                Text(tag.uppercased()).font(.system(size: 9, weight: .semibold)).tracking(0.4).foregroundStyle(Palette.accent)
+                    .fixedSize()
             }
+        }
+        .padding(.horizontal, 14).padding(.vertical, 10)
+        .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
+        .background(isToday ? Palette.highlight : Color.clear)
+        .overlay(alignment: .leading) {
+            if isToday { Rectangle().fill(Palette.accent).frame(width: 3) }
+        }
+        .help(reasons.map(\.reason).joined(separator: "\n\n"))
+        .accessibilityLabel(tag.map { "\(TimeFormatting.shortDate(date)), \($0)" } ?? TimeFormatting.shortDate(date))
     }
 
     private func timeCell(_ d: DaySchedule, _ p: Prayer, isToday: Bool) -> some View {

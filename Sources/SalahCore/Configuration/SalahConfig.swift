@@ -4,10 +4,12 @@ public enum ThemeSetting: String, CaseIterable, Codable, Sendable {
     case system, light, dark
 }
 
-/// The app's accent color family — the timeline panel, buttons and highlights. Red is the
-/// original design; the others are alternates offered in Settings.
+/// The app's accent color family — the timeline panel, buttons, highlights and the Dock icon.
+/// Red is the original design; the others are alternates offered in Settings.
 public enum AccentTheme: String, CaseIterable, Codable, Sendable {
     case red, sage, blue, olive
+    /// Earth tones: black-green, moss and bark, terracotta.
+    case forest, earth, clay
 
     public var displayName: String {
         switch self {
@@ -15,6 +17,9 @@ public enum AccentTheme: String, CaseIterable, Codable, Sendable {
         case .sage: return "Sage"
         case .blue: return "Blue"
         case .olive: return "Olive"
+        case .forest: return "Forest"
+        case .earth: return "Earth"
+        case .clay: return "Clay"
         }
     }
 }
@@ -223,12 +228,15 @@ public struct SalahConfig: Codable, Equatable, Sendable {
     public var reminders: ReminderSettings
     public var focusMode: FocusModeSettings
     public var quran: QuranSettings
+    public var kindWords: KindWordsSettings
+    public var home: HomeSettings
     public var launchAtLogin: Bool
 
     public init(
         location: SavedLocation? = nil, calculation: CalculationSettings = CalculationSettings(),
         display: DisplaySettings = DisplaySettings(), reminders: ReminderSettings = ReminderSettings(),
         focusMode: FocusModeSettings = FocusModeSettings(), quran: QuranSettings = QuranSettings(),
+        kindWords: KindWordsSettings = KindWordsSettings(), home: HomeSettings = HomeSettings(),
         launchAtLogin: Bool = true
     ) {
         self.schemaVersion = Self.currentSchemaVersion
@@ -238,6 +246,8 @@ public struct SalahConfig: Codable, Equatable, Sendable {
         self.reminders = reminders
         self.focusMode = focusMode
         self.quran = quran
+        self.kindWords = kindWords
+        self.home = home
         self.launchAtLogin = launchAtLogin
     }
 
@@ -250,6 +260,8 @@ public struct SalahConfig: Codable, Equatable, Sendable {
         reminders = try c.decodeIfPresent(ReminderSettings.self, forKey: .reminders) ?? ReminderSettings()
         focusMode = try c.decodeIfPresent(FocusModeSettings.self, forKey: .focusMode) ?? FocusModeSettings()
         quran = try c.decodeIfPresent(QuranSettings.self, forKey: .quran) ?? QuranSettings()
+        kindWords = try c.decodeIfPresent(KindWordsSettings.self, forKey: .kindWords) ?? KindWordsSettings()
+        home = try c.decodeIfPresent(HomeSettings.self, forKey: .home) ?? HomeSettings()
         launchAtLogin = try c.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? true
     }
 

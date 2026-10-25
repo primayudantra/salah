@@ -50,6 +50,18 @@ enum SnapshotRenderer {
         shot("focus-mode", height: 1200, FocusModeView())
         model.update { $0.focusMode = FocusModeSettings() }
         shot("focus-mode-off", height: 1200, FocusModeView())
+        model.update { $0.kindWords.enabled = true }
+        shot("kind-words", height: 1700, KindWordsView())
+        model.update { $0.display.accentTheme = .forest }
+        shot("kind-words-forest-dark", dark: true, height: 1700, KindWordsView())
+        model.update { $0 = base }
+        shot("kind-words-off", height: 900, KindWordsView())
+        model.update { $0.kindWords.enabled = true; $0.kindWords.workDuas = true; $0.display.accentTheme = .sage }
+        shot("home-dark", dark: true, width: 1200, height: 2400, HomeView(ticker: model.ticker))
+        model.update { $0 = base }
+        shot("duas-dark", dark: true, height: 3200, DuaView())
+        shot("sidebar-dark", dark: true, width: 220, height: 620, SidebarView(ticker: model.ticker, reminderStatus: "Reminders on"))
+        shot("sidebar-light", width: 220, height: 620, SidebarView(ticker: model.ticker, reminderStatus: "Reminders on"))
         shot("menubar", width: 260, height: 400, MenuBarView(ticker: model.ticker).background(Palette.background))
         shot("menubar-dark", dark: true, width: 260, height: 400, MenuBarView(ticker: model.ticker).background(Color(white: 0.17)))
         model.update { $0.location = SavedLocation(name: "Tromsø", latitude: 69.6492, longitude: 18.9553, timeZone: "Europe/Oslo") }

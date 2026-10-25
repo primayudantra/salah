@@ -6,39 +6,34 @@ struct RootView: View {
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
-        Group {
-            if let error = model.configError {
-                InvalidConfigView(message: error)
-            } else {
-                switch model.tab {
-                case .today: TodayView(ticker: model.ticker)
-                case .schedule: ScheduleView()
-                case .reminders: RemindersView()
-                case .quran: QuranView(player: model.quranPlayer)
-                case .focusMode: FocusModeView()
-                case .settings: SettingsView()
-                case .about: AboutView()
+        NavigationSplitView {
+            SidebarView(ticker: model.ticker, reminderStatus: reminderStatus)
+                .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
+                .toolbar(removing: .sidebarToggle)
+        } detail: {
+            Group {
+                if let error = model.configError {
+                    InvalidConfigView(message: error)
+                } else {
+                    switch model.tab {
+                    case .home: HomeView(ticker: model.ticker)
+                    case .today: TodayView(ticker: model.ticker)
+                    case .schedule: ScheduleView()
+                    case .reminders: RemindersView()
+                    case .quran: QuranView(player: model.quranPlayer)
+                    case .focusMode: FocusModeView()
+                    case .kindWords: KindWordsView()
+                    case .duas: DuaView()
+                    case .settings: SettingsView()
+                    case .about: AboutView()
+                    }
                 }
             }
+            .frame(minWidth: 640, minHeight: 420)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Palette.background)
         }
-        .frame(minWidth: 640, minHeight: 420)
-        .background(Palette.background)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Picker("Screen", selection: $model.tab) {
-                    ForEach(AppModel.Tab.allCases) { Text($0.title).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-            }
-            ToolbarItem(placement: .primaryAction) {
-                Text(reminderStatus)
-                    .font(.system(size: 12))
-                    .foregroundStyle(Palette.secondary)
-                    .padding(.horizontal, 6)
-            }
-        }
-        .toolbarBackground(Palette.chrome, for: .windowToolbar)
+        .toolbarBackground(.hidden, for: .windowToolbar)
         .sheet(isPresented: $model.showLocationSheet) { LocationSheet() }
         .onAppear {
             // Fallback when the menu bar item is hidden: the Dock icon reopens the window.
